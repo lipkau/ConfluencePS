@@ -77,6 +77,7 @@
         'Get-Label',
         'Get-Page',
         'Get-Space',
+        'Get-User',
         'New-Page',
         'New-Space',
         'Remove-Attachment',

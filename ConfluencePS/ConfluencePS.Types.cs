@@ -1,7 +1,8 @@
 using System;
-using System.Collections.Generic;
 using System.Collections;
-// using System.Linq;
+using System.Collections.Generic;
+using System.Management.Automation;
+using Microsoft.PowerShell.Commands;
 
 namespace ConfluencePS
 {
@@ -20,7 +21,9 @@ namespace ConfluencePS
 		public String UserName { get; set; }
 		public String DisplayName { get; set; }
 		public String UserKey { get; set; }
+		public String AccountID { get; set; }
 		public Icon ProfilePicture { get; set; }
+		// public Hashtable Details { get; set; }
 		public override string ToString() {
 			return UserName;
 		}
