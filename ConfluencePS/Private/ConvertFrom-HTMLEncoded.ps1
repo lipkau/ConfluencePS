@@ -1,18 +1,20 @@
 function ConvertFrom-HTMLEncoded {
     <#
     .SYNOPSIS
-    Decode a HTML encoded string
+        Decode a HTML encoded string
     #>
     [CmdletBinding()]
-    [OutputType([String])]
-    param (
+    [OutputType( [String] )]
+    param(
         # String to decode
-        [Parameter( Position = 0, Mandatory = $true, ValueFromPipeline = $true )]
-        [string]$InputString
+        [Parameter( Mandatory, ValueFromPipeline )]
+        [String]
+        $InputString
     )
 
-    PROCESS {
-        Write-Verbose "[$($MyInvocation.MyCommand.Name)] Decoding string from HTML"
+    process {
+        Write-Verbose "Decoding string from HTML"
+
         [System.Web.HttpUtility]::HtmlDecode($InputString)
     }
 }

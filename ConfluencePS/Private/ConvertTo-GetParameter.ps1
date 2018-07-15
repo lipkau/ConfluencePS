@@ -1,26 +1,29 @@
 function ConvertTo-GetParameter {
     <#
     .SYNOPSIS
-    Generate the GET parameter string for an URL from a hashtable
+        Generate the GET parameter string for an URL from a hashtable
     #>
     [CmdletBinding()]
-    param (
-        [Parameter( Position = 0, Mandatory = $true, ValueFromPipeline = $true )]
-        [hashtable]$InputObject
+    [OutputType( [String] )]
+    param(
+        [Parameter( Mandatory, ValueFromPipeline )]
+        [Hashtable]
+        $InputObject
     )
 
-    BEGIN {
-        [string]$parameters = "?"
+    begin {
+        [String]$parameters = "?"
     }
 
-    PROCESS {
-        Write-Verbose "[$($MyInvocation.MyCommand.Name)] Making HTTP get parameter string out of a hashtable"
+    process {
+        Write-Verbose "Making HTTP get parameter string out of a hashtable"
+
         foreach ($key in $InputObject.Keys) {
             $parameters += "$key=$($InputObject[$key])&"
         }
     }
 
-    END {
+    end {
         $parameters -replace ".$"
     }
 }

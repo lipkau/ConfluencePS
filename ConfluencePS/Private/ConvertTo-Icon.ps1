@@ -1,20 +1,22 @@
 function ConvertTo-Icon {
     <#
     .SYNOPSIS
-    Extracted the conversion to private function in order to have a single place
-    to select the properties to use when casting to custom object type
+        Extracted the conversion to private function in order to have a single place
+        to select the properties to use when casting to custom object type
     #>
     [CmdletBinding()]
     [OutputType( [AtlassianPS.ConfluencePS.Icon] )]
     param(
         # object to convert
-        [Parameter( Position = 0, ValueFromPipeline = $true )]
+        [Parameter( ValueFromPipeline )]
+        [PSCustomObject]
         $InputObject
     )
 
-    Process {
+    process {
         foreach ($object in $InputObject) {
-            Write-Verbose "[$($MyInvocation.MyCommand.Name)] Converting Object to Icon"
+            Write-Verbose "Converting Object to Icon"
+
             [AtlassianPS.ConfluencePS.Icon](ConvertTo-Hashtable -InputObject ($object | Select-Object `
                 Path,
                 Width,

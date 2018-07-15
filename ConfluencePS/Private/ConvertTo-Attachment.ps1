@@ -1,39 +1,39 @@
 function ConvertTo-Attachment {
     <#
     .SYNOPSIS
-    Extracted the conversion to private function in order to have a single place to
-    select the properties to use when casting to custom object type
+        Extracted the conversion to private function in order to have a single place to
+        select the properties to use when casting to custom object type
     #>
     [CmdletBinding()]
     [OutputType( [AtlassianPS.ConfluencePS.Attachment] )]
     param(
         # object to convert
-        [Parameter( ValueFromPipeline = $true )]
+        [Parameter( ValueFromPipeline )]
         $InputObject
     )
 
-    Process {
+    process {
         foreach ($object in $InputObject) {
-            Write-Verbose "[$($MyInvocation.MyCommand.Name)] Converting Object to Attachment"
+            Write-Verbose "Converting Object to Attachment"
 
             if($_.container.id) {
-                $PageId = $_.container.id
+                $pageId = $_.container.id
             }
             else {
-                $PageID = $_._expandable.container -replace '^.*\/content\/', ''
-                $PageID = [convert]::ToInt32($PageID, 10)
+                $pageID = $_._expandable.container -replace '^.*\/content\/', ''
+                $pageID = [Convert]::ToInt32($pageID, 10)
             }
 
-            [ConfluencePS.Attachment](ConvertTo-Hashtable -InputObject ($object | Select-Object `
+            [AtlassianPS.ConfluencePS.Attachment](ConvertTo-Hashtable -InputObject ($object | Select-Object `
                     @{Name = "id"; Expression = {
                             $ID = $_.id -replace 'att', ''
-                            [convert]::ToInt32($ID, 10)
+                            [Convert]::ToInt32($ID, 10)
                         }
                     },
                     status,
                     title,
                     @{Name = "filename";  Expression = {
-                            '{0}_{1}' -f $PageID,  $_.title | Remove-InvalidFileCharacter
+                            '{0}_{1}' -f $pageID,  $_.title | Remove-InvalidFileCharacter
                         }
                     },
                     @{Name = "mediatype";  Expression = {
@@ -53,7 +53,7 @@ function ConvertTo-Attachment {
                         }
                     },
                     @{Name = "pageid"; Expression = {
-                            $PageID
+                            $pageID
                         }
                     },
                     @{Name = "version"; Expression = {
