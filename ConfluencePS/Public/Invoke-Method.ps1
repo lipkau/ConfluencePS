@@ -1,99 +1,132 @@
 function Invoke-Method {
-    [CmdletBinding(SupportsPaging = $true)]
+    # .ExternalHelp ..\ConfluencePS-help.xml
+    [CmdletBinding( SupportsPaging )]
     [OutputType(
         [PSObject],
-        [ConfluencePS.Page],
-        [ConfluencePS.Space],
-        [ConfluencePS.Label],
-        [ConfluencePS.Icon],
-        [ConfluencePS.Version],
-        [ConfluencePS.User],
-        [ConfluencePS.Attachment]
+        [AtlassianPS.ConfluencePS.Page],
+        [AtlassianPS.ConfluencePS.Space],
+        [AtlassianPS.ConfluencePS.Label],
+        [AtlassianPS.ConfluencePS.Icon],
+        [AtlassianPS.ConfluencePS.Version],
+        [AtlassianPS.ConfluencePS.User],
+        [AtlassianPS.ConfluencePS.Attachment]
     )]
-    [Diagnostics.CodeAnalysis.SuppressMessageAttribute( "PSAvoidUsingEmptyCatchBlock", "" )]
-    param (
-        [Parameter(Mandatory = $true)]
-        [Uri]$URi,
+    param(
+        [Parameter( Mandatory )]
+        [Uri]
+        $URi,
 
-        [Microsoft.PowerShell.Commands.WebRequestMethod]$Method = "GET",
+        [Microsoft.PowerShell.Commands.WebRequestMethod]
+        $Method = "GET",
 
-        [ValidateNotNullOrEmpty()]
-        [String]$Body,
+        [String]
+        $Body,
 
-        [Switch]$RawBody,
+        [Switch]
+        $RawBody,
 
-        [Hashtable]$Headers,
+        [Hashtable]
+        $Headers = @{},
 
-        [Hashtable]$GetParameters,
+        [Hashtable]
+        $GetParameter = @{},
 
-        [String]$InFile,
+        [Switch]
+        $Paging,
 
-        [String]$OutFile,
+        [String]
+        $InFile,
+
+        [String]
+        $OutFile,
+
+        [Switch]
+        $StoreSession,
 
         [ValidateSet(
-            [ConfluencePS.Page],
-            [ConfluencePS.Space],
-            [ConfluencePS.Label],
-            [ConfluencePS.Icon],
-            [ConfluencePS.Version],
-            [ConfluencePS.User],
-            [ConfluencePS.Attachment]
+            [AtlassianPS.ConfluencePS.Page],
+            [AtlassianPS.ConfluencePS.Space],
+            [AtlassianPS.ConfluencePS.Label],
+            [AtlassianPS.ConfluencePS.Icon],
+            [AtlassianPS.ConfluencePS.Version],
+            [AtlassianPS.ConfluencePS.User],
+            [AtlassianPS.ConfluencePS.Attachment]
         )]
-        [System.Type]$OutputType,
+        [System.Type]
+        $OutputType,
 
-        [Parameter(Mandatory = $true)]
-        [PSCredential]$Credential,
+        [Parameter()]
+        [System.Management.Automation.PSCredential]
+        [System.Management.Automation.Credential()]
+        $Credential = [System.Management.Automation.PSCredential]::Empty,
 
-        $Caller = $PSCmdlet
+        # [Parameter( DontShow )]
+        [ValidateNotNullOrEmpty()]
+        [System.Management.Automation.PSCmdlet]
+        $Cmdlet = $PSCmdlet
     )
 
-    BEGIN {
-        Write-Verbose "[$($MyInvocation.MyCommand.Name)] Function started"
+    begin {
+        Write-Verbose "Function started"
 
-        # pass input to local variable
-        # this allows to use the PSBoundParameters for recursion
-        $_headers = @{   # Set any default headers
-            "Accept"         = "application/json"
-            "Accept-Charset" = "utf-8"
-        }
-        $Headers.Keys.foreach( { $_headers[$_] = $Headers[$_] })
-    }
+        Set-TlsLevel -Tls12
 
-    Process {
-        Write-DebugMessage "[$($MyInvocation.MyCommand.Name)] ParameterSetName: $($PsCmdlet.ParameterSetName)"
-        Write-DebugMessage "[$($MyInvocation.MyCommand.Name)] PSBoundParameters: $($PSBoundParameters | Out-String)"
+        Write-DebugMessage "ParameterSetName: $($PsCmdlet.ParameterSetName)"
+        Write-DebugMessage "PSBoundParameters: $($PSBoundParameters | Out-String)"
 
         # load DefaultParameters for Invoke-WebRequest
         # as the global PSDefaultParameterValues is not used
-        $PSDefaultParameterValues = $global:PSDefaultParameterValues
+        $PSDefaultParameterValues = Resolve-DefaultParameterValue -Reference $global:PSDefaultParameterValues -CommandName 'Invoke-WebRequest'
+
+        #region Headers
+        # Construct the Headers with the folling priority:
+        # - Headers passes as parameters
+        # - User's Headers in $PSDefaultParameterValues
+        # - Module's default Headers
+        $_headers = Join-Hashtable -Hashtable $script:DefaultHeaders, $PSDefaultParameterValues["Invoke-WebRequest:Headers"], $Headers
+        #endregion Headers
+
+        #region Manage URI
+        # Amend query from URI with GetParameter
+        $uriQuery = ConvertTo-ParameterHash -Uri $Uri
+        $internalGetParameter = Join-Hashtable $uriQuery, $GetParameter
+        Write-DebugMessage "Using `$internalGetParameter: $($internalGetParameter | Out-String)"
+
+        # And remove it from URI
+        [Uri]$Uri = $Uri.GetLeftPart("Path")
+        $PaginatedUri = $Uri
 
         # Append GET parameters to URi
-        if (($PSCmdlet.PagingParameters) -and ($PSCmdlet.PagingParameters.Skip)) {
-            $GetParameters["start"] = $PSCmdlet.PagingParameters.Skip
-        }
-        if ($GetParameters -and ($URi -notlike "*\?*")) {
-            Write-Debug "[$($MyInvocation.MyCommand.Name)] Using `$GetParameters: $($GetParameters | Out-String)"
-            [Uri]$URI = "$Uri$(ConvertTo-GetParameter $GetParameters)"
-            # Prevent recursive appends
-            $GetParameters = $null
+        $offset = 0
+        if ($PSCmdlet.PagingParameters) {
+            if ($PSCmdlet.PagingParameters.Skip) {
+                $internalGetParameter["start"] = $PSCmdlet.PagingParameters.Skip
+                $offset = $PSCmdlet.PagingParameters.Skip
+            }
+            if ($PSCmdlet.PagingParameters.First -lt $internalGetParameter["maxResults"]) {
+                $internalGetParameter["maxResults"] = $PSCmdlet.PagingParameters.First
+            }
         }
 
-        # set mandatory parameters
+        [Uri]$PaginatedUri = "{0}{1}" -f $PaginatedUri, (ConvertTo-GetParameter $internalGetParameter)
+        #endregion Manage URI
+
+        #region Constructe IWR Parameter
         $splatParameters = @{
-            Uri             = $URi
+            Uri             = $PaginatedUri
             Method          = $Method
             Headers         = $_headers
-            ContentType     = "application/json; charset=utf-8"
+            ContentType     = $script:DefaultContentType
             UseBasicParsing = $true
             Credential      = $Credential
             ErrorAction     = "Stop"
-            Verbose         = $false     # Overwrites verbose output
+            Verbose         = $false
         }
 
         if ($_headers.ContainsKey("Content-Type")) {
             $splatParameters["ContentType"] = $_headers["Content-Type"]
+            $splatParameters["Headers"].Remove("Content-Type")
             $_headers.Remove("Content-Type")
-            $splatParameters["Headers"] = $_headers
         }
 
         if ($Body) {
@@ -107,152 +140,157 @@ function Invoke-Method {
             }
         }
 
+        if ((-not $Credential) -or ($Credential -eq [System.Management.Automation.PSCredential]::Empty)) {
+            $splatParameters.Remove("Credential")
+            if ($session = Get-JiraSession -ErrorAction SilentlyContinue) {
+                $splatParameters["WebSession"] = $session.WebSession
+            }
+        }
+
+        # if ($StoreSession) {
+        #     $splatParameters["SessionVariable"] = "newSessionVar"
+        #     $splatParameters.Remove("WebSession")
+        # }
+
         if ($InFile) {
             $splatParameters["InFile"] = $InFile
         }
         if ($OutFile) {
             $splatParameters["OutFile"] = $OutFile
         }
+        #endregion Constructe IWR Parameter
 
-        # Invoke the API
-        Write-Verbose "[$($MyInvocation.MyCommand.Name)] Invoking method $Method to URI $URi"
-        Write-Verbose "[$($MyInvocation.MyCommand.Name)] Invoke-WebRequest with: $(([PSCustomObject]$splatParameters) | Out-String)"
+        #region Execute the actual query
         try {
+            Write-Verbose "$($splatParameters.Method) $($splatParameters.Uri)"
+            Write-Debug "Invoke-WebRequest with `$splatParameters: $($splatParameters | Out-String)"
+            # Invoke the API
             $webResponse = Invoke-WebRequest @splatParameters
         }
         catch {
-            Write-Verbose "[$($MyInvocation.MyCommand.Name)] Failed to get an answer from the server"
-            $webResponse = $_
-            if ($webResponse.ErrorDetails) {
-                # In PowerShellCore (v6+), the response body is available as string
-                $responseBody = $webResponse.ErrorDetails.Message
-            }
-            else {
-                $webResponse = $webResponse.Exception.Response
-            }
+            Write-Verbose "Failed to get an answer from the server"
+
+            $exception = $_
+            $webResponse = $exception.Exception.Response
         }
 
-        # Test response Headers if Confluence requires a CAPTCHA
-        Test-Captcha -InputObject $webResponse
+        Write-Debug "Executed WebRequest. Access `$webResponse to see details"
+        Test-ServerResponse -InputObject $webResponse -Cmdlet $Cmdlet
+        #endregion Execute the actual query
+    }
 
-        Write-Debug "[$($MyInvocation.MyCommand.Name)] Executed WebRequest. Access `$webResponse to see details"
-
+    process {
         if ($webResponse) {
             # In PowerShellCore (v6+) the StatusCode of an exception is somewhere else
             if (-not ($statusCode = $webResponse.StatusCode)) {
-                $statusCode = $webresponse.Exception.Response.StatusCode
+                $statusCode = $webResponse.Exception.Response.StatusCode
             }
-            Write-Verbose "[$($MyInvocation.MyCommand.Name)] Status code: $($statusCode)"
+            Write-Verbose "Status code: $($statusCode)"
 
+            #region Code 400+
             if ($statusCode.value__ -ge 400) {
-                Write-Warning "Confluence returned HTTP error $($statusCode.value__) - $($statusCode)"
-
-                if ((!($responseBody)) -and ($webResponse | Get-Member -Name "GetResponseStream")) {
-                    # Retrieve body of HTTP response - this contains more useful information about exactly why the error occurred
-                    $readStream = New-Object -TypeName System.IO.StreamReader -ArgumentList ($webResponse.GetResponseStream())
-                    $responseBody = $readStream.ReadToEnd()
-                    $readStream.Close()
-                }
-
-                Write-Verbose "[$($MyInvocation.MyCommand.Name)] Retrieved body of HTTP response for more information about the error (`$responseBody)"
-                Write-Debug "[$($MyInvocation.MyCommand.Name)] Got the following error as `$responseBody"
-
-                $errorItem = [System.Management.Automation.ErrorRecord]::new(
-                    ([System.ArgumentException]"Invalid Server Response"),
-                    "InvalidResponse.Status$($statusCode.value__)",
-                    [System.Management.Automation.ErrorCategory]::InvalidResult,
-                    $responseBody
-                )
-
-                try {
-                    $responseObject = ConvertFrom-Json -InputObject $responseBody -ErrorAction Stop
-                    if ($responseObject.message) {
-                        $errorItem.ErrorDetails = $responseObject.message
-                    }
-                    else {
-                        $errorItem.ErrorDetails = "An unknown error ocurred."
-                    }
-
-                }
-                catch {
-                    $errorItem.ErrorDetails = "An unknown error ocurred."
-                }
-
-                $Caller.WriteError($errorItem)
+                Resolve-ErrorWebResponse -Exception $exception -StatusCode $statusCode -Cmdlet $Cmdlet
             }
-            else {
-                if ($webResponse.Content) {
-                    try {
-                        # API returned a Content: lets work with it
-                        $response = ConvertFrom-Json ([Text.Encoding]::UTF8.GetString($webResponse.RawContentStream.ToArray()))
+            #endregion Code 400+
 
-                        if ($null -ne $response.errors) {
-                            Write-Verbose "[$($MyInvocation.MyCommand.Name)] An error response was received from; resolving"
-                            # This could be handled nicely in an function such as:
-                            # ResolveError $response -WriteError
-                            Write-Error $($response.errors | Out-String)
+            #region Code 399-
+            else {
+                # if ($StoreSession) {
+                #     return & $script:SessionTransformationMethod -Session $newSessionVar -Username $Credential.UserName
+                # }
+
+                if ($webResponse.Content) {
+                    $response = ConvertFrom-Json ([Text.Encoding]::UTF8.GetString($webResponse.RawContentStream.ToArray()))
+
+                    if ($Paging) {
+                        # Remove Parameters that don't need propagation
+                        $script:PSDefaultParameterValues.Remove("$($MyInvocation.MyCommand.Name):IncludeTotalCount")
+                        $null = $PSBoundParameters.Remove("Paging")
+                        $null = $PSBoundParameters.Remove("Skip")
+                        if (-not $PSBoundParameters["GetParameter"]) {
+                            $PSBoundParameters["GetParameter"] = $internalGetParameter
                         }
-                        else {
-                            if ($PSCmdlet.PagingParameters.IncludeTotalCount) {
-                                [double]$Accuracy = 0.0
-                                $PSCmdlet.PagingParameters.NewTotalCount($response.size, $Accuracy)
+
+                        $total = 0
+                        do {
+                            Write-Verbose "Invoking pagination [currentTotal: $total]"
+                            Write-Host $script:PagingContainers
+                            foreach ($container in $script:PagingContainers) {
+                                if (($response) -and ($response | Get-Member -Name $container)) {
+                                    Write-DebugMessage "Extracting data from [$container] containter"
+                                    $result = $response.$container
+                                }
                             }
-                            # None paginated results / first page of pagination
-                            $result = $response
-                            if (($response) -and ($response | Get-Member -Name results)) {
-                                $result = $response.results
+
+                            $total += @($result).Count
+                            $pageSize = $response.maxResults
+
+                            if ($total -gt $PSCmdlet.PagingParameters.First) {
+                                Write-DebugMessage "Only output the first $($PSCmdlet.PagingParameters.First % $pageSize) of page"
+                                $result = $result | Select-Object -First ($PSCmdlet.PagingParameters.First % $pageSize)
                             }
-                            if ($OutputType) {
+
+                            $converter = "ConvertTo-$($OutputType.Name)"
+                            if (Test-Path function:\$converter) {
                                 # Results shall be casted to custom objects (see ValidateSet)
-                                Write-Verbose "[$($MyInvocation.MyCommand.Name)] Outputting results as $($OutputType.FullName)"
-                                $converter = "ConvertTo-$($OutputType.Name)"
-                                $result | & $converter
+                                Write-Debug "Outputting `$result as $($OutputType)"
+                                Write-Output ($result | & $converter)
                             }
                             else {
-                                $result
+                                Write-Debug "Outputting `$result"
+                                Write-Output ($result)
                             }
 
-                            # Detect if result is paginated
-                            if ($response._links.next) {
-                                Write-Verbose "[$($MyInvocation.MyCommand.Name)] Invoking pagination"
+                            if ($total -ge $PSCmdlet.PagingParameters.First) {
+                                Write-DebugMessage "Stopping paging, as $total reached $($PSCmdlet.PagingParameters.First)"
+                                break
+                            }
 
-                                # Remove Parameters that don't need propagation
-                                $script:PSDefaultParameterValues.Remove("$($MyInvocation.MyCommand.Name):GetParameters")
-                                $script:PSDefaultParameterValues.Remove("$($MyInvocation.MyCommand.Name):IncludeTotalCount")
+                            # calculate the size of the next page
+                            $PSBoundParameters["GetParameter"]["start"] = $total + $offset
+                            $expectedTotal = $PSBoundParameters["GetParameter"]["start"] + $pageSize
+                            if ($expectedTotal -gt $PSCmdlet.PagingParameters.First) {
+                                $reduceBy = $expectedTotal - $PSCmdlet.PagingParameters.First
+                                $PSBoundParameters["GetParameter"]["maxResults"] = $pageSize - $reduceBy
+                            }
 
-                                # Self-Invoke function for recursion
-                                $parameters = @{
-                                    URi        = "{0}{1}" -f $response._links.base, $response._links.next
-                                    Method     = $Method
-                                    Credential = $Credential
+                            # Inquire the next page
+                            $response = Invoke-Method @PSBoundParameters
+
+                            # Expand data container of paged results
+                            $result = @()
+                            foreach ($container in $script:PagingContainers) {
+                                if (($response) -and ($response | Get-Member -Name $container)) {
+                                    $result = $response.$container
                                 }
-                                if ($Body) {$parameters["Body"] = $Body}
-                                if ($Headers) {$parameters["Headers"] = $Headers}
-                                if ($OutputType) {$parameters["OutputType"] = $OutputType}
-
-                                Write-Verbose "NEXT PAGE: $($parameters["URi"])"
-
-                                Invoke-Method @parameters
                             }
+                        } while ($result.Count)
+
+                        if ($PSCmdlet.PagingParameters.IncludeTotalCount) {
+                            [double]$Accuracy = 1.0
+                            $PSCmdlet.PagingParameters.NewTotalCount($total, $Accuracy)
                         }
                     }
-                    catch {
-                        throw $_
+                    else {
+                        Write-Output $response
                     }
                 }
                 else {
                     # No content, although statusCode < 400
                     # This could be wanted behavior of the API
-                    Write-Verbose "[$($MyInvocation.MyCommand.Name)] No content was returned from."
+                    Write-Verbose "No content was returned from."
                 }
             }
+            #endregion Code 399-
         }
         else {
-            Write-Verbose "[$($MyInvocation.MyCommand.Name)] No Web result object was returned from. This is unusual!"
+            Write-Verbose "No Web result object was returned from. This is unusual!"
         }
     }
 
-    END {
-        Write-Verbose "[$($MyInvocation.MyCommand.Name)] Function ended"
+    end {
+        Set-TlsLevel -Revert
+
+        Write-Verbose "Function ended"
     }
 }
