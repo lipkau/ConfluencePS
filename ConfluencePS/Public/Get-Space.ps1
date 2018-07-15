@@ -1,42 +1,56 @@
 function Get-Space {
-    [CmdletBinding(
-        SupportsPaging = $true
-    )]
-    param (
-        [Parameter( Mandatory = $true )]
-        [URi]$apiURi,
+    # .ExternalHelp ..\ConfluencePS-help.xml
+    [CmdletBinding( SupportsPaging )]
     [OutputType([AtlassianPS.ConfluencePS.Space])]
+    param(
+        [Parameter( ValueFromPipeline )]
+        [Alias('Key')]
+        [String[]]
+        $SpaceKey,
+
+        [UInt32]
+        $PageSize = (Get-AtlassianConfiguration -Name "ConfluencePS" -ValueOnly)["PageSize"],
 
         [Parameter( Mandatory = $true )]
-        [PSCredential]$Credential,
-
-        [Parameter(
-            Position = 0
+        [ValidateNotNullOrEmpty()]
+        [ArgumentCompleter(
+            {
+                param($commandName, $parameterName, $wordToComplete, $commandAst, $fakeBoundParameter)
+                $commandName = "Get-AtlassianServerConfiguration"
+                & $commandName |
+                    Where-Object { $_.Name -like "$wordToComplete*" } |
+                    ForEach-Object { [System.Management.Automation.CompletionResult]::new( $_.Name, $_.Name, [System.Management.Automation.CompletionResultType]::ParameterValue, $_.Name ) }
+            }
         )]
-        [Alias('Key')]
-        [string[]]$SpaceKey,
+        [String]
+        $ServerName,
 
-        [ValidateRange(1, [int]::MaxValue)]
-        [int]$PageSize = 25
+        [Parameter()]
+        [System.Management.Automation.PSCredential]
+        [System.Management.Automation.Credential()]
+        $Credential = [System.Management.Automation.PSCredential]::Empty
     )
 
-    BEGIN {
-        Write-Verbose "[$($MyInvocation.MyCommand.Name)] Function started"
+    begin {
+        Write-Verbose "Function started"
 
-        $resourceApi = "$apiURi/space{0}"
+        $server = (Get-AtlassianServerConfiguration -Name $ServerName -ErrorAction Stop 4>$null 5>$null).Uri
+
+        $resourceApi = "$server/rest/api/space{0}"
     }
 
-    PROCESS {
-        Write-Debug "[$($MyInvocation.MyCommand.Name)] ParameterSetName: $($PsCmdlet.ParameterSetName)"
-        Write-Debug "[$($MyInvocation.MyCommand.Name)] PSBoundParameters: $($PSBoundParameters | Out-String)"
+    process {
+        Write-DebugMessage "ParameterSetName: $($PsCmdlet.ParameterSetName)"
+        Write-DebugMessage "PSBoundParameters: $($PSBoundParameters | Out-String)"
 
         $iwParameters = @{
             Uri           = ""
             Method        = 'Get'
-            GetParameters = @{
+            GetParameter = @{
                 expand = "description.plain,icon,homepage,metadata.labels"
                 limit  = $PageSize
             }
+            Paging        = $true
             OutputType    = [AtlassianPS.ConfluencePS.Space]
             Credential    = $Credential
         }
@@ -60,7 +74,7 @@ function Get-Space {
         }
     }
 
-    END {
-        Write-Verbose "[$($MyInvocation.MyCommand.Name)] Function ended"
+    end {
+        Write-Verbose "Function ended"
     }
 }
