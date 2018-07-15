@@ -5,8 +5,8 @@ function ConvertTo-Space {
     select the properties to use when casting to custom object type
     #>
     [CmdletBinding()]
-    [OutputType( [ConfluencePS.Space] )]
     param (
+    [OutputType( [AtlassianPS.ConfluencePS.Space] )]
         # object to convert
         [Parameter( Position = 0, ValueFromPipeline = $true )]
         $InputObject
@@ -15,7 +15,7 @@ function ConvertTo-Space {
     Process {
         foreach ($object in $InputObject) {
             Write-Verbose "[$($MyInvocation.MyCommand.Name)] Converting Object to Space"
-            [ConfluencePS.Space](ConvertTo-Hashtable -InputObject ($object | Select-Object `
+            [AtlassianPS.ConfluencePS.Space](ConvertTo-Hashtable -InputObject ($object | Select-Object `
                 id,
                 key,
                 name,

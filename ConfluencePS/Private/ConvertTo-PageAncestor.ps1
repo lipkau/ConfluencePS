@@ -5,8 +5,8 @@ function ConvertTo-PageAncestor {
     select the properties to use when casting to custom object type
     #>
     [CmdletBinding()]
-    [OutputType( [ConfluencePS.Page] )]
     param (
+    [OutputType( [AtlassianPS.ConfluencePS.Page] )]
         # object to convert
         [Parameter( Position = 0, ValueFromPipeline = $true )]
         $InputObject
@@ -15,7 +15,7 @@ function ConvertTo-PageAncestor {
     Process {
         foreach ($object in $InputObject) {
             Write-Verbose "[$($MyInvocation.MyCommand.Name)] Converting Object to Page (Ancestor)"
-            [ConfluencePS.Page](ConvertTo-Hashtable -InputObject ($object | Select-Object `
+            [AtlassianPS.ConfluencePS.Page](ConvertTo-Hashtable -InputObject ($object | Select-Object `
                 id,
                 status,
                 title

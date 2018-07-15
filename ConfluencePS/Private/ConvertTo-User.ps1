@@ -5,8 +5,8 @@ function ConvertTo-User {
     select the properties to use when casting to custom object type
     #>
     [CmdletBinding()]
-    [OutputType( [ConfluencePS.User] )]
     param (
+    [OutputType( [AtlassianPS.ConfluencePS.User] )]
         # object to convert
         [Parameter( Position = 0, ValueFromPipeline = $true )]
         $InputObject
@@ -15,7 +15,7 @@ function ConvertTo-User {
     Process {
         foreach ($object in $InputObject) {
             Write-Verbose "[$($MyInvocation.MyCommand.Name)] Converting Object to User"
-            [ConfluencePS.User](ConvertTo-Hashtable -InputObject ($object | Select-Object `
+            [AtlassianPS.ConfluencePS.User](ConvertTo-Hashtable -InputObject ($object | Select-Object `
                 username,
                 userKey,
                 @{Name = "profilePicture"; Expression = { ConvertTo-Icon $_.profilePicture }},

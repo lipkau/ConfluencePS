@@ -1,7 +1,10 @@
 #region Dependencies
 # Load the ConfluencePS namespace from C#
-if (!("ConfluencePS.Space" -as [Type])) {
+if (!("AtlassianPS.ConfluencePS.Space" -as [Type])) {
     Add-Type -Path (Join-Path $PSScriptRoot ConfluencePS.Types.cs) -ReferencedAssemblies Microsoft.CSharp, Microsoft.PowerShell.Commands.Utility, System.Management.Automation
+}
+if ($PSVersionTable.PSVersion.Major -lt 5) {
+    Add-Type -Path (Join-Path $PSScriptRoot AtlassianPS.Configuration.Attributes.cs) -ReferencedAssemblies Microsoft.CSharp, Microsoft.PowerShell.Commands.Utility, System.Management.Automation
 }
 
 # Load Web assembly when needed
@@ -16,9 +19,9 @@ $PublicFunctions = @( Get-ChildItem -Path $PSScriptRoot\Public\*.ps1 -ErrorActio
 $PrivateFunctions = @( Get-ChildItem -Path $PSScriptRoot\Private\*.ps1 -ErrorAction SilentlyContinue )
 
 # Dot source the functions
-ForEach ($File in @($PublicFunctions + $PrivateFunctions)) {
+ForEach ($file in @($PublicFunctions + $PrivateFunctions)) {
     Try {
-        . $File.FullName
+        . $file.FullName
     }
     Catch {
         $errorItem = [System.Management.Automation.ErrorRecord]::new(
@@ -27,8 +30,9 @@ ForEach ($File in @($PublicFunctions + $PrivateFunctions)) {
             [System.Management.Automation.ErrorCategory]::ObjectNotFound,
             $File
         )
-        $errorItem.ErrorDetails = "Failed to import function $($File.BaseName)"
+        $errorItem.ErrorDetails = "Failed to import function $($file.BaseName)"
         $PSCmdlet.ThrowTerminatingError($errorItem)
     }
 }
+Export-ModuleMember -Function $PublicFunctions.BaseName -Alias *
 #endregion LoadFunctions

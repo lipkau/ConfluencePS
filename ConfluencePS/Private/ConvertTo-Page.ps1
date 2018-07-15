@@ -5,8 +5,8 @@ function ConvertTo-Page {
     select the properties to use when casting to custom object type
     #>
     [CmdletBinding()]
-    [OutputType( [ConfluencePS.Page] )]
     param (
+    [OutputType( [AtlassianPS.ConfluencePS.Page] )]
         # object to convert
         [Parameter( Position = 0, ValueFromPipeline = $true )]
         $InputObject
@@ -15,8 +15,8 @@ function ConvertTo-Page {
     Process {
         foreach ($object in $InputObject) {
             Write-Verbose "[$($MyInvocation.MyCommand.Name)] Converting Object to Page"
-            [ConfluencePS.Page](ConvertTo-Hashtable -InputObject ($object | Select-Object `
-                        id,
+            [AtlassianPS.ConfluencePS.Page](ConvertTo-Hashtable -InputObject ($object | Select-Object `
+                    id,
                     status,
                     title,
                     @{Name = "space"; Expression = {

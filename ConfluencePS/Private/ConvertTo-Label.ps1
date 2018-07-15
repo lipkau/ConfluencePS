@@ -5,8 +5,8 @@ function ConvertTo-Label {
     select the properties to use when casting to custom object type
     #>
     [CmdletBinding()]
-    [OutputType( [ConfluencePS.Version] )]
     param (
+    [OutputType( [AtlassianPS.ConfluencePS.Label] )]
         # object to convert
         [Parameter( Position = 0, ValueFromPipeline = $true )]
         $InputObject
@@ -15,7 +15,7 @@ function ConvertTo-Label {
     Process {
         foreach ($object in $InputObject) {
             Write-Verbose "[$($MyInvocation.MyCommand.Name)] Converting Object to Label"
-            [ConfluencePS.Label](ConvertTo-Hashtable -InputObject ($object | Select-Object `
+            [AtlassianPS.ConfluencePS.Label](ConvertTo-Hashtable -InputObject ($object | Select-Object `
                 id,
                 name,
                 prefix

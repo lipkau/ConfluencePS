@@ -5,8 +5,8 @@ function ConvertTo-Attachment {
     select the properties to use when casting to custom object type
     #>
     [CmdletBinding()]
-    [OutputType( [ConfluencePS.Attachment] )]
-    param (
+    [OutputType( [AtlassianPS.ConfluencePS.Attachment] )]
+    param(
         # object to convert
         [Parameter( ValueFromPipeline = $true )]
         $InputObject

@@ -2,10 +2,10 @@ function Get-Space {
     [CmdletBinding(
         SupportsPaging = $true
     )]
-    [OutputType([ConfluencePS.Space])]
     param (
         [Parameter( Mandatory = $true )]
         [URi]$apiURi,
+    [OutputType([AtlassianPS.ConfluencePS.Space])]
 
         [Parameter( Mandatory = $true )]
         [PSCredential]$Credential,
@@ -37,7 +37,7 @@ function Get-Space {
                 expand = "description.plain,icon,homepage,metadata.labels"
                 limit  = $PageSize
             }
-            OutputType    = [ConfluencePS.Space]
+            OutputType    = [AtlassianPS.ConfluencePS.Space]
             Credential    = $Credential
         }
 
