@@ -16,6 +16,20 @@ function Invoke-Method {
         [Uri]
         $URi,
 
+        [Parameter()]
+        [ArgumentCompleter(
+            {
+                param($commandName, $parameterName, $wordToComplete, $commandAst, $fakeBoundParameter)
+                $command = Get-Command "Get-*ServerConfiguration" -Module AtlassianPS.Configuration
+                & $command.Name |
+                    Where-Object { $_.Type -eq [AtlassianPS.ServerType]"Confluence" } |
+                    Where-Object { $_.Name -like "$wordToComplete*" } |
+                    ForEach-Object { [System.Management.Automation.CompletionResult]::new( $_.Name, $_.Name, [System.Management.Automation.CompletionResultType]::ParameterValue, $_.Name ) }
+            }
+        )]
+        [String]
+        $ServerName = (Get-DefaultServer),
+
         [Microsoft.PowerShell.Commands.WebRequestMethod]
         $Method = "GET",
 
@@ -73,6 +87,21 @@ function Invoke-Method {
 
         Write-DebugMessage "ParameterSetName: $($PsCmdlet.ParameterSetName)"
         Write-DebugMessage "PSBoundParameters: $($PSBoundParameters | Out-String)"
+
+        $server = Get-AtlassianServerConfiguration -ErrorAction Stop 4>$null 5>$null |
+            Where-Object Type -eq "CONFLUENCE" |
+            Where-Object Name -eq $ServerName
+
+        if (@($server).Count -ne 1) {
+            $throwErrorSplat = @{
+                ExceptionType = "System.ApplicationException"
+                Message       = "Missing Server"
+                ErrorId       = "AtlassianPS.ConfluencePS.MissingServer"
+                Category      = "InvalidData"
+                Cmdlet = $Cmdlet
+            }
+            ThrowError @throwErrorSplat
+        }
 
         # load DefaultParameters for Invoke-WebRequest
         # as the global PSDefaultParameterValues is not used
@@ -142,15 +171,16 @@ function Invoke-Method {
 
         if ((-not $Credential) -or ($Credential -eq [System.Management.Automation.PSCredential]::Empty)) {
             $splatParameters.Remove("Credential")
-            if ($session = Get-JiraSession -ErrorAction SilentlyContinue) {
-                $splatParameters["WebSession"] = $session.WebSession
+            if ($server.Session) {
+                Write-Verbose "Using stores session for authentication"
+                $splatParameters["WebSession"] = $server.Session
             }
         }
 
-        # if ($StoreSession) {
-        #     $splatParameters["SessionVariable"] = "newSessionVar"
-        #     $splatParameters.Remove("WebSession")
-        # }
+        if ($StoreSession) {
+            $splatParameters["SessionVariable"] = "newSessionVar"
+            $splatParameters.Remove("WebSession")
+        }
 
         if ($InFile) {
             $splatParameters["InFile"] = $InFile
@@ -195,9 +225,15 @@ function Invoke-Method {
 
             #region Code 399-
             else {
-                # if ($StoreSession) {
-                #     return & $script:SessionTransformationMethod -Session $newSessionVar -Username $Credential.UserName
-                # }
+                if ($StoreSession) {
+                    Write-Verbose "Storing Session"
+
+                    # $null = $newSessionVar.Headers.Remove("Authorization")
+
+                    Write-DebugMessage "Storing `$newSessionVar to `$server" -BreakPoint
+                    $server | Set-AtlassianServerConfiguration -Session $newSessionVar
+                    return
+                }
 
                 if ($webResponse.Content) {
                     $response = ConvertFrom-Json ([Text.Encoding]::UTF8.GetString($webResponse.RawContentStream.ToArray()))
@@ -214,7 +250,6 @@ function Invoke-Method {
                         $total = 0
                         do {
                             Write-Verbose "Invoking pagination [currentTotal: $total]"
-                            Write-Host $script:PagingContainers
                             foreach ($container in $script:PagingContainers) {
                                 if (($response) -and ($response | Get-Member -Name $container)) {
                                     Write-DebugMessage "Extracting data from [$container] containter"
