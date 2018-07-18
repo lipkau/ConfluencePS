@@ -11,19 +11,19 @@ function Get-Space {
         [UInt32]
         $PageSize = (Get-AtlassianConfiguration -Name "ConfluencePS" -ValueOnly)["PageSize"],
 
-        [Parameter( Mandatory = $true )]
-        [ValidateNotNullOrEmpty()]
+        [Parameter()]
         [ArgumentCompleter(
             {
                 param($commandName, $parameterName, $wordToComplete, $commandAst, $fakeBoundParameter)
-                $commandName = "Get-AtlassianServerConfiguration"
-                & $commandName |
+                $command = Get-Command "Get-*ServerConfiguration" -Module AtlassianPS.Configuration
+                & $command.Name |
+                    Where-Object { $_.Type -eq [AtlassianPS.ServerType]"Confluence" } |
                     Where-Object { $_.Name -like "$wordToComplete*" } |
                     ForEach-Object { [System.Management.Automation.CompletionResult]::new( $_.Name, $_.Name, [System.Management.Automation.CompletionResultType]::ParameterValue, $_.Name ) }
             }
         )]
         [String]
-        $ServerName,
+        $ServerName = (Get-DefaultServer),
 
         [Parameter()]
         [System.Management.Automation.PSCredential]
@@ -34,9 +34,7 @@ function Get-Space {
     begin {
         Write-Verbose "Function started"
 
-        $server = (Get-AtlassianServerConfiguration -Name $ServerName -ErrorAction Stop 4>$null 5>$null).Uri
-
-        $resourceApi = "$server/rest/api/space{0}"
+        $resourceURi = "/rest/api/space{0}"
     }
 
     process {
@@ -44,15 +42,16 @@ function Get-Space {
         Write-DebugMessage "PSBoundParameters: $($PSBoundParameters | Out-String)"
 
         $iwParameters = @{
-            Uri           = ""
-            Method        = 'Get'
+            Uri          = ""
+            ServerName   = $ServerName
+            Method       = 'Get'
             GetParameter = @{
                 expand = "description.plain,icon,homepage,metadata.labels"
                 limit  = $PageSize
             }
-            Paging        = $true
-            OutputType    = [AtlassianPS.ConfluencePS.Space]
-            Credential    = $Credential
+            Paging       = $true
+            OutputType   = [AtlassianPS.ConfluencePS.Space]
+            Credential   = $Credential
         }
 
         # Paging
@@ -62,13 +61,13 @@ function Get-Space {
 
         if ($SpaceKey) {
             foreach ($_space in $SpaceKey) {
-                $iwParameters["Uri"] = $resourceApi -f "/$_space"
+                $iwParameters["Uri"] = $resourceURi -f "/$_space"
 
                 Invoke-Method @iwParameters
             }
         }
         else {
-            $iwParameters["Uri"] = $resourceApi -f ""
+            $iwParameters["Uri"] = $resourceURi -f ""
 
             Invoke-Method @iwParameters
         }

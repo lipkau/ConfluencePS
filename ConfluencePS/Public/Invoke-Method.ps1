@@ -13,8 +13,8 @@ function Invoke-Method {
     )]
     param(
         [Parameter( Mandatory )]
-        [Uri]
-        $URi,
+        [String]
+        $Uri,
 
         [Parameter()]
         [ArgumentCompleter(
@@ -102,6 +102,8 @@ function Invoke-Method {
             }
             ThrowError @throwErrorSplat
         }
+
+        [Uri]$Uri = "{0}{1}" -f $server.Uri, $Uri
 
         # load DefaultParameters for Invoke-WebRequest
         # as the global PSDefaultParameterValues is not used

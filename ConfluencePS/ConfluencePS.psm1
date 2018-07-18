@@ -31,15 +31,15 @@ Set-AtlassianConfiguration -Name ConfluencePS -Value $moduleSettings
 #endregion Configuration
 
 #region LoadFunctions
-$PublicFunctions = @( Get-ChildItem -Path $PSScriptRoot\Public\*.ps1 -ErrorAction SilentlyContinue )
-$PrivateFunctions = @( Get-ChildItem -Path $PSScriptRoot\Private\*.ps1 -ErrorAction SilentlyContinue )
+$publicFunctions = @( Get-ChildItem -Path $PSScriptRoot\Public\*.ps1 -ErrorAction SilentlyContinue )
+$privateFunctions = @( Get-ChildItem -Path $PSScriptRoot\Private\*.ps1 -ErrorAction SilentlyContinue )
 
 # Dot source the functions
-ForEach ($file in @($PublicFunctions + $PrivateFunctions)) {
-    Try {
+foreach ($file in @($PublicFunctions + $PrivateFunctions)) {
+    try {
         . $file.FullName
     }
-    Catch {
+    catch {
         $errorItem = [System.Management.Automation.ErrorRecord]::new(
             ([System.ArgumentException]"Function not found"),
             'Load.Function',
