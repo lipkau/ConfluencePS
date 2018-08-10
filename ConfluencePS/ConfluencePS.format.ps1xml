@@ -5,7 +5,7 @@
         <View>
             <Name>DefaultView</Name>
             <ViewSelectedBy>
-                <TypeName>ConfluencePS.Space</TypeName>
+                <TypeName>AtlassianPS.ConfluencePS.Space</TypeName>
             </ViewSelectedBy>
             <TableControl>
                 <TableHeaders>
@@ -39,7 +39,7 @@
         <View>
             <Name>DefaultView</Name>
             <ViewSelectedBy>
-                <TypeName>ConfluencePS.Page</TypeName>
+                <TypeName>AtlassianPS.ConfluencePS.Page</TypeName>
             </ViewSelectedBy>
             <TableControl>
                 <TableHeaders>
@@ -99,7 +99,7 @@
         <View>
             <Name>DefaultView</Name>
             <ViewSelectedBy>
-                <TypeName>ConfluencePS.Label</TypeName>
+                <TypeName>AtlassianPS.ConfluencePS.Label</TypeName>
             </ViewSelectedBy>
             <TableControl>
                 <TableHeaders>
@@ -121,29 +121,57 @@
         <View>
             <Name>DefaultView</Name>
             <ViewSelectedBy>
-                <TypeName>ConfluencePS.ContentLabelSet</TypeName>
+                <TypeName>AtlassianPS.ConfluencePS.Comment</TypeName>
             </ViewSelectedBy>
             <TableControl>
                 <TableHeaders>
                     <TableColumnHeader>
-                        <Label>PageID</Label>
-                        <Width>20</Width>
+                        <Label>ID</Label>
+                        <Width>10</Width>
                         <Alignment>left</Alignment>
                     </TableColumnHeader>
                     <TableColumnHeader>
+                        <Label>Status</Label>
+                        <Width>9</Width>
+                        <Alignment>left</Alignment>
+                    </TableColumnHeader>
+                    <TableColumnHeader>
+                        <Label>Title</Label>
                         <Width>36</Width>
+                        <Alignment>left</Alignment>
+                    </TableColumnHeader>
+                    <TableColumnHeader>
+                        <Label>SpaceKey</Label>
+                        <Width>15</Width>
+                        <Alignment>left</Alignment>
+                    </TableColumnHeader>
+                    <TableColumnHeader>
+                        <Label>Version</Label>
+                        <Width>7</Width>
+                        <Alignment>left</Alignment>
                     </TableColumnHeader>
                 </TableHeaders>
                 <TableRowEntries>
                     <TableRowEntry>
                         <TableColumnItems>
                             <TableColumnItem>
+                                <PropertyName>ID</PropertyName>
+                            </TableColumnItem>
+                            <TableColumnItem>
+                                <PropertyName>Status</PropertyName>
+                            </TableColumnItem>
+                            <TableColumnItem>
+                                <PropertyName>Title</PropertyName>
+                            </TableColumnItem>
+                            <TableColumnItem>
                                 <ScriptBlock>
-                                    [String]::Format("{0}", $_.Page.ID)
+                                    [String]::Format("{0}", $_.Space.Key)
                                 </ScriptBlock>
                             </TableColumnItem>
                             <TableColumnItem>
-                                <PropertyName>Labels</PropertyName>
+                                <ScriptBlock>
+                                    [String]::Format("{0}", $_.Version.Number)
+                                </ScriptBlock>
                             </TableColumnItem>
                         </TableColumnItems>
                     </TableRowEntry>

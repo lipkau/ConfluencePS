@@ -71,7 +71,8 @@ function ConvertTo-Attachment {
                             }
                             else {$null}
                         }
-                    }
+                    },
+                    @{Name = "Self"; Expression = {$_._links.self}}
                 ))
         }
     }

@@ -1,10 +1,10 @@
 #region Dependencies
 # Load the ConfluencePS namespace from C#
 if (!("AtlassianPS.ConfluencePS.Space" -as [Type])) {
-    Add-Type -Path (Join-Path $PSScriptRoot ConfluencePS.Types.cs) -ReferencedAssemblies Microsoft.CSharp, Microsoft.PowerShell.Commands.Utility, System.Management.Automation
+    Add-Type -Path (Join-Path $PSScriptRoot ConfluencePS.Types.cs) -ReferencedAssemblies Microsoft.CSharp, Microsoft.PowerShell.Commands.Utility, System.Management.Automation, System.Runtime.Extensions
 }
 if ($PSVersionTable.PSVersion.Major -lt 5) {
-    Add-Type -Path (Join-Path $PSScriptRoot AtlassianPS.Configuration.Attributes.cs) -ReferencedAssemblies Microsoft.CSharp, Microsoft.PowerShell.Commands.Utility, System.Management.Automation
+    Add-Type -Path (Join-Path $PSScriptRoot AtlassianPS.Configuration.Attributes.cs) -ReferencedAssemblies Microsoft.CSharp, Microsoft.PowerShell.Commands.Utility, System.Management.Automation, System.Runtime.Extensions
 }
 
 # Load Web assembly when needed
@@ -47,7 +47,8 @@ foreach ($file in @($PublicFunctions + $PrivateFunctions)) {
             $File
         )
         $errorItem.ErrorDetails = "Failed to import function $($file.BaseName)"
-        $PSCmdlet.ThrowTerminatingError($errorItem)
+        # $PSCmdlet.ThrowTerminatingError($errorItem)
+        throw $_
     }
 }
 Export-ModuleMember -Function $PublicFunctions.BaseName -Alias *

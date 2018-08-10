@@ -52,6 +52,7 @@ function Get-Space {
             Paging       = $true
             OutputType   = [AtlassianPS.ConfluencePS.Space]
             Credential   = $Credential
+            Verbose    = $false
         }
 
         # Paging

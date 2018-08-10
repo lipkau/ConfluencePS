@@ -1,70 +1,72 @@
 function Set-Label {
-    [CmdletBinding(
-        ConfirmImpact = 'Low',
-        SupportsShouldProcess = $true
+    # .ExternalHelp ..\ConfluencePS-help.xml
+    [CmdletBinding( ConfirmImpact = 'Low', SupportsShouldProcess )]
+    [OutputType(
+        [AtlassianPS.ConfluencePS.Attachment],
+        [AtlassianPS.ConfluencePS.BlogPost],
+        [AtlassianPS.ConfluencePS.Comment],
+        [AtlassianPS.ConfluencePS.Page]
     )]
-    [OutputType([ConfluencePS.ContentLabelSet])]
-    param (
-        [Parameter( Mandatory = $true )]
-        [URi]$apiURi,
+    param(
+        [Parameter( Mandatory, ValueFromPipeline, ValueFromPipelineByPropertyName )]
+        [ValidateRange(1, [UInt32]::MaxValue)]
+        [Alias('ID', 'PageID', 'CommentID', 'BlogPostID', 'AttachmentID')]
+        [UInt32[]]
+        $ContentID,
 
-        [Parameter( Mandatory = $true )]
-        [PSCredential]$Credential,
+        [Parameter( Mandatory )]
 
-        [Parameter(
-            Position = 0,
-            Mandatory = $true,
-            ValueFromPipeline = $true,
-            ValueFromPipelineByPropertyName = $true
+        [AtlassianPS.ConfluencePS.Label[]]
+        $Label,
+
+        [Parameter()]
+        [ArgumentCompleter(
+            {
+                param($commandName, $parameterName, $wordToComplete, $commandAst, $fakeBoundParameter)
+                $command = Get-Command "Get-*ServerConfiguration" -Module AtlassianPS.Configuration
+                & $command.Name |
+                    Where-Object { $_.Type -eq [AtlassianPS.ServerType]"Confluence" } |
+                    Where-Object { $_.Name -like "$wordToComplete*" } |
+                    ForEach-Object { [System.Management.Automation.CompletionResult]::new( $_.Name, $_.Name, [System.Management.Automation.CompletionResultType]::ParameterValue, $_.Name ) }
+            }
         )]
-        [ValidateRange(1, [int]::MaxValue)]
-        [Alias('ID')]
-        [int[]]$PageID,
+        [String]
+        $ServerName = (Get-DefaultServer),
 
-        [Parameter(Mandatory = $true)]
-        [string[]]$Label
+        [Parameter()]
+        [System.Management.Automation.PSCredential]
+        [System.Management.Automation.Credential()]
+        $Credential = [System.Management.Automation.PSCredential]::Empty
     )
 
-    BEGIN {
-        Write-Verbose "[$($MyInvocation.MyCommand.Name)] Function started"
+    begin {
+        Write-Verbose "Function started"
 
-        $resourceApi = "$apiURi/content/{0}/label"
+        $resourceApi = "/rest/api/content/{0}/label"
     }
 
-    PROCESS {
-        Write-Debug "[$($MyInvocation.MyCommand.Name)] ParameterSetName: $($PsCmdlet.ParameterSetName)"
-        Write-Debug "[$($MyInvocation.MyCommand.Name)] PSBoundParameters: $($PSBoundParameters | Out-String)"
-
-        if (($_) -and -not($_ -is [ConfluencePS.Page] -or $_ -is [int])) {
-            $message = "The Object in the pipe is not a Page."
-            $exception = New-Object -TypeName System.ArgumentException -ArgumentList $message
-            Throw $exception
-        }
+    process {
+        Write-DebugMessage "ParameterSetName: $($PsCmdlet.ParameterSetName)"
+        Write-DebugMessage "PSBoundParameters: $($PSBoundParameters | Out-String)"
 
         $iwParameters = @{
             Uri        = ""
-            Method     = 'Post'
+            ServerName = $ServerName
+            Method     = "Post"
             Body       = ""
-            OutputType = [ConfluencePS.Label]
             Credential = $Credential
+            Verbose    = $false
         }
 
-        foreach ($_page in $PageID) {
-            if ($_ -is [ConfluencePS.Page]) {
-                $InputObject = $_
-            }
-            else {
-                $InputObject = Get-Page -PageID $_page -ApiURi $apiURi -Credential $Credential
-            }
+        foreach ($_contentID in $ContentID) {
+            Write-Verbose "Removing all previous labels"
+            $null = Remove-Label -ContentID $_contentID -ServerName $ServerName -Credential $Credential
 
-            Write-Verbose "[$($MyInvocation.MyCommand.Name)] Removing all previous labels"
-            Remove-Label -PageID $_page -ApiURi $apiURi -Credential $Credential | Out-Null
-
-            $iwParameters["Uri"] = $resourceApi -f $_page
+            $iwParameters["Uri"] = $resourceApi -f $_contentID
             $iwParameters["Body"] = $Label | Foreach-Object {@{prefix = 'global'; name = $_}} | ConvertTo-Json
 
-            Write-Debug "[$($MyInvocation.MyCommand.Name)] Content to be sent: $($iwParameters["Body"] | Out-String)"
-            If ($PSCmdlet.ShouldProcess("Label $Label, PageID $_page")) {
+            Write-DebugMessage "Invoking API Method with `$iwParameters" -BreakPoint
+            If ($PSCmdlet.ShouldProcess("Label $Label, PageID $_contentID")) {
                 $output = [ConfluencePS.ContentLabelSet]@{ Page = $InputObject }
                 $output.Labels += (Invoke-Method @iwParameters)
                 $output
@@ -72,7 +74,7 @@ function Set-Label {
         }
     }
 
-    END {
-        Write-Verbose "[$($MyInvocation.MyCommand.Name)] Function ended"
+    end {
+        Write-Verbose "Function ended"
     }
 }

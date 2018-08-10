@@ -1,84 +1,96 @@
 function Set-Page {
-    [CmdletBinding(
-        ConfirmImpact = 'Medium',
-        SupportsShouldProcess = $true,
-        DefaultParameterSetName = 'byParameters'
-    )]
-    [OutputType([ConfluencePS.Page])]
-    param (
-        [Parameter( Mandatory = $true )]
-        [URi]$apiURi,
+    # .ExternalHelp ..\ConfluencePS-help.xml
+    [CmdletBinding( ConfirmImpact = 'Medium', SupportsShouldProcess, DefaultParameterSetName = 'byParameters' )]
+    [OutputType( [AtlassianPS.ConfluencePS.Page] )]
+    param(
+        [Parameter( Mandatory, ValueFromPipeline, ParameterSetName = 'byObject' )]
+        [AtlassianPS.ConfluencePS.Page]
+        $InputObject,
 
-        [Parameter( Mandatory = $true )]
-        [PSCredential]$Credential,
-
-        [Parameter(
-            Mandatory = $true,
-            ValueFromPipeline = $true,
-            ParameterSetName = 'byObject'
-        )]
-        [ConfluencePS.Page]$InputObject,
-
-        [Parameter(
-            Mandatory = $true,
-            ValueFromPipeline = $true,
-            ParameterSetName = 'byParameters'
-        )]
-        [ValidateRange(1, [int]::MaxValue)]
+        [Parameter( Mandatory, ValueFromPipeline, ParameterSetName = 'byParameters' )]
+        [ValidateRange(1, [UInt32]::MaxValue)]
         [Alias('ID')]
-        [int]$PageID,
+        [UInt32]
+        $PageID,
 
         [Parameter(ParameterSetName = 'byParameters')]
         [ValidateNotNullOrEmpty()]
-        [string]$Title,
+        [String]
+        $Title,
 
         [Parameter(ParameterSetName = 'byParameters')]
-        [string]$Body,
+        [String]
+        $Body,
 
         [Parameter(ParameterSetName = 'byParameters')]
-        [switch]$Convert,
+        [Switch]
+        $Convert,
 
         [Parameter(ParameterSetName = 'byParameters')]
-        [ValidateRange(1, [int]::MaxValue)]
-        [int]$ParentID,
+        [ValidateRange(1, [Uint32]::MaxValue)]
+        [UInt32]
+        $ParentID,
 
         [Parameter(ParameterSetName = 'byParameters')]
-        [ConfluencePS.Page]$Parent
+        [AtlassianPS.ConfluencePS.Page]
+        $Parent,
+
+        [Parameter()]
+        [ArgumentCompleter(
+            {
+                param($commandName, $parameterName, $wordToComplete, $commandAst, $fakeBoundParameter)
+                $command = Get-Command "Get-*ServerConfiguration" -Module AtlassianPS.Configuration
+                & $command.Name |
+                    Where-Object { $_.Type -eq [AtlassianPS.ServerType]"Confluence" } |
+                    Where-Object { $_.Name -like "$wordToComplete*" } |
+                    ForEach-Object { [System.Management.Automation.CompletionResult]::new( $_.Name, $_.Name, [System.Management.Automation.CompletionResultType]::ParameterValue, $_.Name ) }
+            }
+        )]
+        [String]
+        $ServerName = (Get-DefaultServer),
+
+        [Parameter()]
+        [System.Management.Automation.PSCredential]
+        [System.Management.Automation.Credential()]
+        $Credential = [System.Management.Automation.PSCredential]::Empty
     )
 
-    BEGIN {
-        Write-Verbose "[$($MyInvocation.MyCommand.Name)] Function started"
+    begin {
+        Write-Verbose "Function started"
 
-        $resourceApi = "$apiURi/content/{0}"
+        $resourceApi = "/rest/api/content/{0}"
 
         # If -Convert is flagged, call ConvertTo-ConfluenceStorageFormat against the -Body
         If ($Convert) {
-            Write-Verbose '[$($MyInvocation.MyCommand.Name)] -Convert flag active; converting content to Confluence storage format'
-            $Body = ConvertTo-StorageFormat -Content $Body -ApiURi $apiURi -Credential $Credential
+            Write-Verbose '-Convert flag active; converting content to Confluence storage format'
+            $Body = ConvertTo-StorageFormat -Content $Body -ServerName $ServerName -Credential $Credential
         }
     }
 
-    PROCESS {
-        Write-Debug "[$($MyInvocation.MyCommand.Name)] ParameterSetName: $($PsCmdlet.ParameterSetName)"
-        Write-Debug "[$($MyInvocation.MyCommand.Name)] PSBoundParameters: $($PSBoundParameters | Out-String)"
+    process {
+        Write-DebugMessage "ParameterSetName: $($PsCmdlet.ParameterSetName)"
+        Write-DebugMessage "PSBoundParameters: $($PSBoundParameters | Out-String)"
 
         $iwParameters = @{
             Uri        = ""
+            ServerName = $ServerName
             Method     = 'Put'
             Body       = ""
-            OutputType = [ConfluencePS.Page]
+            OutputType = [AtlassianPS.ConfluencePS.Page]
             Credential = $Credential
+            Verbose    = $false
         }
-        $Content = [PSObject]@{
+
+        $Content = [PSCustomObject]@{
             type      = "page"
             title     = ""
-            body      = [PSObject]@{
-                storage = [PSObject]@{
+            body      = [PSCustomObject]@{
+                storage = [PSCustomObject]@{
                     value          = ""
                     representation = 'storage'
                 }
             }
-            version   = [PSObject]@{
+            version   = [PSCustomObject]@{
                 number = 0
             }
             ancestors = @()
@@ -122,13 +134,13 @@ function Set-Page {
 
         $iwParameters["Body"] = $Content | ConvertTo-Json
 
-        Write-Debug "[$($MyInvocation.MyCommand.Name)] Content to be sent: $($Content | Out-String)"
+        Write-DebugMessage "Invoking API Method with `$iwParameters" -BreakPoint
         If ($PSCmdlet.ShouldProcess("Page $($Content.title)")) {
             Invoke-Method @iwParameters
         }
     }
 
-    END {
-        Write-Verbose "[$($MyInvocation.MyCommand.Name)] Function ended"
+    end {
+        Write-Verbose "Function ended"
     }
 }

@@ -21,7 +21,8 @@ function ConvertTo-User {
                 username,
                 userKey,
                 @{Name = "profilePicture"; Expression = { ConvertTo-Icon $_.profilePicture }},
-                displayname
+                displayname,
+                @{Name = "Self"; Expression = {$_._links.self}}
             ))
         }
     }

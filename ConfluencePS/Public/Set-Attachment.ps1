@@ -1,22 +1,11 @@
 function Set-Attachment {
-    [CmdletBinding(
-        ConfirmImpact = 'Low',
-        SupportsShouldProcess = $true
-    )]
-    [OutputType([ConfluencePS.Attachment])]
-    param (
-        [Parameter( Mandatory = $true )]
-        [URi]$apiURi,
-
-        [Parameter( Mandatory = $true )]
-        [PSCredential]$Credential,
-
-        [Parameter(
-            Position = 0,
-            Mandatory = $true,
-            ValueFromPipeline = $true
-        )]
-        [ConfluencePS.Attachment]$Attachment,
+    # .ExternalHelp ..\ConfluencePS-help.xml
+    [CmdletBinding( ConfirmImpact = 'Low', SupportsShouldProcess )]
+    [OutputType( [AtlassianPS.ConfluencePS.Attachment] )]
+    param(
+        [Parameter( Mandatory, ValueFromPipeline )]
+        [AtlassianPS.ConfluencePS.Attachment]
+        $Attachment,
 
         # Path of the file to upload and attach
         [Parameter( Mandatory )]
@@ -37,34 +26,55 @@ function Set-Attachment {
                 }
             }
         )]
-        [String]$FilePath
+        [String]
+        $FilePath,
+
+        [Parameter()]
+        [ArgumentCompleter(
+            {
+                param($commandName, $parameterName, $wordToComplete, $commandAst, $fakeBoundParameter)
+                $command = Get-Command "Get-*ServerConfiguration" -Module AtlassianPS.Configuration
+                & $command.Name |
+                    Where-Object { $_.Type -eq [AtlassianPS.ServerType]"Confluence" } |
+                    Where-Object { $_.Name -like "$wordToComplete*" } |
+                    ForEach-Object { [System.Management.Automation.CompletionResult]::new( $_.Name, $_.Name, [System.Management.Automation.CompletionResultType]::ParameterValue, $_.Name ) }
+            }
+        )]
+        [String]
+        $ServerName = (Get-DefaultServer),
+
+        [Parameter()]
+        [System.Management.Automation.PSCredential]
+        [System.Management.Automation.Credential()]
+        $Credential = [System.Management.Automation.PSCredential]::Empty
     )
 
-    BEGIN {
-        Write-Verbose "[$($MyInvocation.MyCommand.Name)] Function started"
+    begin {
+        Write-Verbose "Function started"
 
-        $resourceApi = "$apiURi/content/{0}/child/attachment/{1}/data"
+        $resourceApi = "/rest/api/content/{0}/child/attachment/{1}/data"
     }
 
-    PROCESS {
-        Write-DebugMessage "[$($MyInvocation.MyCommand.Name)] ParameterSetName: $($PsCmdlet.ParameterSetName)"
-        Write-DebugMessage "[$($MyInvocation.MyCommand.Name)] PSBoundParameters: $($PSBoundParameters | Out-String)"
+    process {
+        Write-DebugMessage "ParameterSetName: $($PsCmdlet.ParameterSetName)"
+        Write-DebugMessage "PSBoundParameters: $($PSBoundParameters | Out-String)"
 
         $parameter = @{
             URI        = $resourceApi -f $Attachment.PageID, $Attachment.ID
+            ServerName = $ServerName
             Method     = "POST"
             InFile     = $FilePath
             Credential = $Credential
-            OutputType = [ConfluencePS.Attachment]
+            OutputType = [AtlassianPS.ConfluencePS.Attachment]
             Verbose    = $false
         }
-        Write-Debug "[$($MyInvocation.MyCommand.Name)] Invoking Set Attachment Method with `$parameter"
+        Write-DebugMessage "Invoking API Method with `$iwParameters" -BreakPoint
         if ($PSCmdlet.ShouldProcess($Attachment.PageID, "Updating attachment '$($Attachment.Title)'.")) {
             Invoke-Method @parameter
         }
     }
 
-    END {
-        Write-Verbose "[$($MyInvocation.MyCommand.Name)] Function ended"
+    end {
+        Write-Verbose "Function ended"
     }
 }

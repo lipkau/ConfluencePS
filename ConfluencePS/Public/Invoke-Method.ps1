@@ -58,13 +58,15 @@ function Invoke-Method {
         $StoreSession,
 
         [ValidateSet(
+            [AtlassianPS.ConfluencePS.Attachment],
+            [AtlassianPS.ConfluencePS.BlogPost],
+            [AtlassianPS.ConfluencePS.Comment],
+            [AtlassianPS.ConfluencePS.Icon],
+            [AtlassianPS.ConfluencePS.Label],
             [AtlassianPS.ConfluencePS.Page],
             [AtlassianPS.ConfluencePS.Space],
-            [AtlassianPS.ConfluencePS.Label],
-            [AtlassianPS.ConfluencePS.Icon],
-            [AtlassianPS.ConfluencePS.Version],
             [AtlassianPS.ConfluencePS.User],
-            [AtlassianPS.ConfluencePS.Attachment]
+            [AtlassianPS.ConfluencePS.Version]
         )]
         [System.Type]
         $OutputType,
@@ -82,6 +84,50 @@ function Invoke-Method {
 
     begin {
         Write-Verbose "Function started"
+
+        function ConvertResults {
+            param(
+                [Parameter( ValueFromPipeline )]
+                $InputObject,
+
+                $OutputType
+            )
+
+            process {
+                $InputObject | ForEach-Object {
+                    $item = $_
+                    if ($OutputType) {
+                        $converter = "ConvertTo-$($OutputType.Name)"
+                    }
+                    elseif ($item.type) {
+                        $converter = "ConvertTo-$($item.type)"
+                    }
+
+                    if ($converter -and (Test-Path function:\$converter)) {
+                        $item | & $converter
+                    }
+                    else {
+                        $item
+                    }
+                }
+            }
+        }
+
+        function ExpandResults {
+            param(
+                [Parameter( Mandatory, ValueFromPipeline )]
+                $InputObject
+            )
+
+            process {
+                foreach ($container in $script:PagingContainers) {
+                    if (($InputObject) -and ($InputObject | Get-Member -Name $container)) {
+                        Write-DebugMessage "Extracting data from [$container] containter"
+                        $InputObject.$container
+                    }
+                }
+            }
+        }
 
         Set-TlsLevel -Tls12
 
@@ -252,12 +298,8 @@ function Invoke-Method {
                         $total = 0
                         do {
                             Write-Verbose "Invoking pagination [currentTotal: $total]"
-                            foreach ($container in $script:PagingContainers) {
-                                if (($response) -and ($response | Get-Member -Name $container)) {
-                                    Write-DebugMessage "Extracting data from [$container] containter"
-                                    $result = $response.$container
-                                }
-                            }
+
+                            $result = ExpandResults -InputObject $response
 
                             $total += @($result).Count
                             $pageSize = $response.maxResults
@@ -267,15 +309,11 @@ function Invoke-Method {
                                 $result = $result | Select-Object -First ($PSCmdlet.PagingParameters.First % $pageSize)
                             }
 
-                            $converter = "ConvertTo-$($OutputType.Name)"
-                            if (Test-Path function:\$converter) {
-                                # Results shall be casted to custom objects (see ValidateSet)
-                                Write-Debug "Outputting `$result as $($OutputType)"
-                                Write-Output ($result | & $converter)
-                            }
-                            else {
-                                Write-Debug "Outputting `$result"
-                                Write-Output ($result)
+                            ConvertResults -InputObject $result -OutputType $OutputType
+
+                            if (@($result).Count -lt $response.limit) {
+                                Write-DebugMessage "Stopping paging, as page had less entries than $($response.limit)"
+                                break
                             }
 
                             if ($total -ge $PSCmdlet.PagingParameters.First) {
@@ -294,14 +332,8 @@ function Invoke-Method {
                             # Inquire the next page
                             $response = Invoke-Method @PSBoundParameters
 
-                            # Expand data container of paged results
-                            $result = @()
-                            foreach ($container in $script:PagingContainers) {
-                                if (($response) -and ($response | Get-Member -Name $container)) {
-                                    $result = $response.$container
-                                }
-                            }
-                        } while ($result.Count)
+                            $result = ExpandResults -InputObject $response
+                        } while (@($result).Count -gt 0)
 
                         if ($PSCmdlet.PagingParameters.IncludeTotalCount) {
                             [double]$Accuracy = 1.0
@@ -309,7 +341,13 @@ function Invoke-Method {
                         }
                     }
                     else {
-                        Write-Output $response
+                        $caller = (Get-PSCallstack | Select -First 2)[-1].Command
+                        if ($PSCmdlet.MyInvocation.MyCommand.Name -eq $caller) {
+                            $response
+                        }
+                        else {
+                            ConvertResults -InputObject $response -OutputType $OutputType
+                        }
                     }
                 }
                 else {

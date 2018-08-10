@@ -1,11 +1,11 @@
-function ConvertTo-Page {
+function ConvertTo-Comment {
     <#
     .SYNOPSIS
         Extracted the conversion to private function in order to have a single place to
         select the properties to use when casting to custom object type
     #>
     [CmdletBinding()]
-    [OutputType( [AtlassianPS.ConfluencePS.Page] )]
+    [OutputType( [AtlassianPS.ConfluencePS.Comment] )]
     param(
         # object to convert
         [Parameter( ValueFromPipeline )]
@@ -15,15 +15,15 @@ function ConvertTo-Page {
 
     process {
         foreach ($object in $InputObject) {
-            Write-Verbose "Converting Object to Page"
+            Write-Verbose "Converting Object to Comment"
 
-            [AtlassianPS.ConfluencePS.Page](ConvertTo-Hashtable -InputObject ($object | Select-Object `
-                    id,
+            [AtlassianPS.ConfluencePS.Comment](ConvertTo-Hashtable -InputObject ($object | Select-Object `
+                        id,
                     status,
                     title,
-                    @{Name = "space"; Expression = {
-                            if ($_.space) {
-                                ConvertTo-Space $_.space
+                    @{Name = "author"; Expression = {
+                            if ($_.history -and $_.history.createdBy) {
+                                ConvertTo-User $_.history.createdBy
                             }
                             else {$null}
                         }
@@ -36,9 +36,23 @@ function ConvertTo-Page {
                         }
                     },
                     @{Name = "body"; Expression = {$_.body.storage.value}},
-                    @{Name = "ancestors"; Expression = {
-                            if ($_.ancestors) {
-                                ConvertTo-PageAncestor $_.ancestors
+                    @{Name = "location"; Expression = {
+                            if ($_.extensions -and $_.extensions.location) {
+                                $_.extensions.location
+                            }
+                            else {$null}
+                        }
+                    },
+                    @{Name = "resolution"; Expression = {
+                            if ($_.extensions -and $_.extensions.resolution) {
+                                ConvertTo-CommentResolution $_.extensions.resolution
+                            }
+                            else {$null}
+                        }
+                    },
+                    @{Name = "inlineProperties"; Expression = {
+                            if ($_.extensions -and $_.extensions.inlineProperties) {
+                                ConvertTo-CommentInlineProperties $_.extensions.inlineProperties
                             }
                             else {$null}
                         }
@@ -48,15 +62,6 @@ function ConvertTo-Page {
                             if (!($base)) { $base = $_._links.self -replace '\/rest.*', '' }
                             if ($_._links.webui) {
                                 "{0}{1}" -f $base, $_._links.webui
-                            }
-                            else {$null}
-                        }
-                    },
-                    @{Name = "ShortURL"; Expression = {
-                            $base = $_._links.base
-                            if (!($base)) { $base = $_._links.self -replace '\/rest.*', '' }
-                            if ($_._links.tinyui) {
-                                "{0}{1}" -f $base, $_._links.tinyui
                             }
                             else {$null}
                         }

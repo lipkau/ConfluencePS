@@ -34,7 +34,8 @@ function ConvertTo-Space {
                     if ($_.homepage -is [PSCustomObject]) {
                             ConvertTo-Page $_.homepage
                     } else {$null} # homepage might be a string
-                }}
+                }},
+                @{Name = "Self"; Expression = {$_._links.self}}
             ))
         }
     }

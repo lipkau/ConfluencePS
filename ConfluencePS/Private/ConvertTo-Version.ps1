@@ -23,7 +23,8 @@ function ConvertTo-Version {
                 friendlyWhen,
                 number,
                 message,
-                minoredit
+                minoredit,
+                @{Name = "Self"; Expression = {$_._links.self}}
             ))
         }
     }
