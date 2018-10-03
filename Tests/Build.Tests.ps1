@@ -23,7 +23,7 @@ Describe "Validation of build environment" {
             $env:BHManifestToTest = $env:BHBuildModuleManifest
         }
 
-        Import-Module "$env:BHProjectPath/Tools/build.psm1"
+        Import-Module "$env:BHProjectPath/Tools/BuildTools.psm1"
 
         Remove-Module $env:BHProjectName -ErrorAction SilentlyContinue
         # Import-Module $env:BHManifestToTest
@@ -34,16 +34,13 @@ Describe "Validation of build environment" {
         Remove-Item -Path Env:\BH*
     }
 
-    $changelogFile = if ($script:isBuild) {
-        "$env:BHBuildOutput/$env:BHProjectName/CHANGELOG.md"
-    }
-    else {
-        "$env:BHProjectPath/CHANGELOG.md"
-    }
-
-    $appveyorFile = "$env:BHProjectPath/appveyor.yml"
-
     Context "CHANGELOG" {
+        $changelogFile = if ($script:isBuild) {
+            "$env:BHBuildOutput/$env:BHProjectName/CHANGELOG.md"
+        }
+        else {
+            "$env:BHProjectPath/CHANGELOG.md"
+        }
 
         foreach ($line in (Get-Content $changelogFile)) {
             if ($line -match "(?:##|\<h2.*?\>)\s*(?<Version>(\d+\.?){1,2})") {
@@ -67,6 +64,8 @@ Describe "Validation of build environment" {
     }
 
     Context "AppVeyor" {
+        $appveyorFile = "$env:BHProjectPath/appveyor.yml"
+        $appveyorDevFile = "$env:BHProjectPath/Tools/dev-appveyor.yml"
 
         foreach ($line in (Get-Content $appveyorFile)) {
             # (?<Version>()) - non-capturing group, but named Version. This makes it
@@ -78,8 +77,32 @@ Describe "Validation of build environment" {
             }
         }
 
-        It "has a config file for AppVeyor" {
+        It "has an AppVeyor config file for master branch" {
             $appveyorFile | Should -Exist
+            $appveyorFile | Should -FileContentMatchMultiline "branches:\r?\n\s+only:\r?\n\s+- master"
+        }
+
+        It "has an AppVeyor config file for development" {
+            $appveyorDevFile | Should -Exist
+            $appveyorDevFile | Should -FileContentMatchMultiline "branches:\r?\n\s+except:\r?\n\s+- master"
+        }
+
+        It "contains an authentication token (secure) for the PS Gallery" {
+            $appveyorFile | Should -FileContentMatchMultiline "PSGalleryAPIKey:\r?\n\s+secure:"
+        }
+
+        foreach ($version in @("4.0", "5.1", "6.0")) {
+            It "tests the project on Powersell version $version" {
+                $appveyorFile | Should -FileContentMatch "PowershellVersion: `"$version"
+            }
+        }
+
+        It "tests the project on Windows" {
+            $appveyorFile | Should -FileContentMatch "APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio"
+        }
+
+        It "tests the project on Ubuntu" {
+            $appveyorFile | Should -FileContentMatch "APPVEYOR_BUILD_WORKER_IMAGE: Ubuntu"
         }
 
         It "has a valid version in the appveyor config" {

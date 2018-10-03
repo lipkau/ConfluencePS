@@ -1,7 +1,15 @@
-# requires -module InvokeBuild
-
 [CmdletBinding()]
 param()
+
+function Invoke-Init {
+    [Alias("Init")]
+    [CmdletBinding()]
+    param()
+    begin {
+        Set-BuildEnvironment -BuildOutput '$ProjectPath/Release' -ErrorAction SilentlyContinue
+        Add-ToModulePath -Path $env:BHBuildOutput
+    }
+}
 
 function Assert-True {
     [CmdletBinding( DefaultParameterSetName = 'ByBool' )]
@@ -23,6 +31,12 @@ function Assert-True {
     }
 }
 
+function LogCall {
+    Assert-True { Test-Path TestDrive:\ } "This function only work inside pester"
+
+    Set-Content -Value "$($MyInvocation.Invocationname) $($MyInvocation.UnBoundArguments -join " ")" -Path "TestDrive:\FunctionCalled.$($MyInvocation.Invocationname).txt" -Force
+}
+
 function Add-ToModulePath ([String]$Path) {
     $PSModulePath = $env:PSModulePath -split ([IO.Path]::PathSeparator)
     if ($Path -notin $PSModulePath) {
@@ -30,6 +44,7 @@ function Add-ToModulePath ([String]$Path) {
         $env:PSModulePath = $PSModulePath -join ([IO.Path]::PathSeparator)
     }
 }
+
 function Install-PSDepend {
     if (-not (Get-Module PSDepend -ListAvailable)) {
         if (Get-Module PowershellGet -ListAvailable) {
@@ -95,6 +110,9 @@ function Test-IsLastJob {
 }
 
 function Test-ShouldDeploy {
+    if (-not ($env:ShouldDeploy -eq $true)) {
+        return $false
+    }
     # only deploy master branch
     if (-not ('master' -eq $env:BHBranchName)) {
         return $false
@@ -104,7 +122,7 @@ function Test-ShouldDeploy {
         return $false
     }
     # only deploy from AppVeyor
-    if (-not ('AppVeyor' -eq $env:BHBuildSystem)) {
+    if (-not ($env:APPVEYOR_JOB_ID)) {
         return $false
     }
     # must be last job of AppVeyor
@@ -127,7 +145,7 @@ function Publish-GithubRelease {
         [Object]$NextBuildVersion
     )
 
-    Assert-True { $env:access_token } "Missing Github authentication"
+    Assert-True { $env:GITHUB_ACCESS_TOKEN } "Missing Github authentication"
     Assert-True { $env:APPVEYOR_REPO_NAME } "Missing AppVeyor's Repo Name"
 
     $body = @{
@@ -144,7 +162,7 @@ function Publish-GithubRelease {
         Method      = 'POST'
         Headers     = @{
             Authorization = 'Basic ' + [Convert]::ToBase64String(
-                [Text.Encoding]::ASCII.GetBytes($env:access_token + ":x-oauth-basic")
+                [Text.Encoding]::ASCII.GetBytes($env:GITHUB_ACCESS_TOKEN + ":x-oauth-basic")
             )
         }
         ContentType = 'application/json'
@@ -160,7 +178,7 @@ function Publish-GithubReleaseArtifact {
         [String]$Path
     )
 
-    Assert-True { $env:access_token } "Missing Github authentication"
+    Assert-True { $env:GITHUB_ACCESS_TOKEN } "Missing Github authentication"
     Assert-True { $env:APPVEYOR_REPO_NAME } "Missing AppVeyor's Repo Name"
 
     $body = [System.IO.File]::ReadAllBytes($Path)
@@ -169,13 +187,36 @@ function Publish-GithubReleaseArtifact {
         Method      = 'POST'
         Headers     = @{
             Authorization = 'Basic ' + [Convert]::ToBase64String(
-                [Text.Encoding]::ASCII.GetBytes($env:access_token + ":x-oauth-basic")
+                [Text.Encoding]::ASCII.GetBytes($env:GITHUB_ACCESS_TOKEN + ":x-oauth-basic")
             )
         }
         ContentType = "application/zip"
         Body        = $body
     }
     Invoke-RestMethod @assetParams
+}
+
+function Set-AppVeyorBuildNumber {
+    param()
+
+    Assert-True { $env:APPVEYOR_REPO_NAME } "Is not an AppVeyor Job"
+    Assert-True { $env:APPVEYOR_API_TOKEN } "Is missing AppVeyor's API token"
+
+    $separator = "-"
+    $headers = @{
+        "Authorization" = "Bearer $env:APPVEYOR_API_TOKEN"
+        "Content-type"  = "application/json"
+    }
+    $apiURL = "https://ci.appveyor.com/api/projects/$env:APPVEYOR_ACCOUNT_NAME/$env:APPVEYOR_PROJECT_SLUG"
+    $history = Invoke-RestMethod -Uri "$apiURL/history?recordsNumber=2" -Headers $headers  -Method Get
+    if ($history.builds.Count -eq 2) {
+        $s = Invoke-RestMethod -Uri "$apiURL/settings" -Headers $headers  -Method Get
+        $s.settings.nextBuildNumber = ($s.settings.nextBuildNumber - 1)
+        Invoke-RestMethod -Uri 'https://ci.appveyor.com/api/projects' -Headers $headers  -Body ($s.settings | ConvertTo-Json -Depth 10) -Method Put
+        $previousVersion = $history.builds[1].version
+        if ($previousVersion.IndexOf("$separator") -ne "-1") {$previousVersion = $previousVersion.SubString(0, $previousVersion.IndexOf("$separator"))}
+        Update-AppveyorBuild -Version $previousVersion$separator$((New-Guid).ToString().SubString(0,8))
+    }
 }
 
 #region Old
@@ -400,3 +441,5 @@ function Remove-Utf8Bom {
         }
     }
 }
+
+Export-ModuleMember -Function * -Alias *

@@ -26,12 +26,37 @@ catch { }
 
 Set-StrictMode -Version Latest
 
-Import-Module "$PSScriptRoot/Tools/build.psm1" -Force -ErrorAction Stop
+Import-Module "$PSScriptRoot/Tools/BuildTools.psm1" -Force -ErrorAction Stop
+Import-Module "$PSScriptRoot/Tools/AppVeyor.psm1" -Force -ErrorAction Stop
+
 if ($BuildTask -notin @("SetUp", "InstallDependencies")) {
     Import-Module BuildHelpers -Force -ErrorAction Stop
+    Invoke-Init
+}
+if ('AppVeyor' -eq $env:BHBuildSystem) {
+    $project = Get-AppVeyorProject
 }
 
+$shouldDeploy = (
+    ($env:ShouldDeploy -eq $true) -and
+    # only deploy master branch
+    ('master' -eq $env:BHBranchName) -and
+    # it cannot be a PR
+    ( -not $env:APPVEYOR_PULL_REQUEST_NUMBER) -and
+    # only deploy from AppVeyor
+    ('AppVeyor' -eq $env:BHBuildSystem) -and
+    # must be last job of AppVeyor
+    (Test-IsLastJob) -and
+    # Travis-CI must be finished (if used)
+    # TODO: ( -not Test-TravisProgress) -and
+    # it cannot have a commit message that contains "skip-deploy"
+    ($env:BHCommitMessage -notlike '*skip-deploy*')
+)
+
 #region SetUp
+# Synopsis: Proxy task
+task Init { Invoke-Init }
+
 # Synopsis: Create an initial environment for developing on the module
 task SetUp InstallDependencies, Build
 
@@ -41,22 +66,14 @@ task InstallDependencies {
     Import-Module PSDepend -Force
     $parameterPSDepend = @{
         Path        = "$PSScriptRoot/Tools/build.requirements.psd1"
-        Target      = $Scope
         Install     = $true
-        Import      = $true
+        Import      = $false
         Force       = $true
         ErrorAction = "Stop"
     }
     $null = Invoke-PSDepend @parameterPSDepend
     Import-Module BuildHelpers -Force
 }
-
-# Synopsis: Ensure the build environment is all ready to go
-task Init {
-    Set-BuildEnvironment -BuildOutput '$ProjectPath/Release' -ErrorAction SilentlyContinue
-
-    Add-ToModulePath -Path $env:BHBuildOutput
-}, GetNextVersion
 
 # Synopsis: Get the next version for the build
 task GetNextVersion {
@@ -93,7 +110,7 @@ switch ($true) {
 #endregion HarmonizeVariables
 
 #region DebugInformation
-task ShowInfo Init, {
+task ShowInfo Init, GetNextVersion, {
     Write-Build Gray
     Write-Build Gray ('Running in:                 {0}' -f $env:BHBuildSystem)
     Write-Build Gray '-------------------------------------------------------'
@@ -108,7 +125,7 @@ task ShowInfo Init, {
     Write-Build Gray ('Commit:                     {0}' -f $env:BHCommitMessage)
     Write-Build Gray ('Build #:                    {0}' -f $env:BHBuildNumber)
     Write-Build Gray ('Next Version:               {0}' -f $env:NextBuildVersion)
-    Write-Build Gray ('Will deploy new version?    {0}' -f (Test-ShouldDeploy))
+    Write-Build Gray ('Will deploy new version?    {0}' -f $shouldDeploy)
     Write-Build Gray '-------------------------------------------------------'
     Write-Build Gray
     Write-Build Gray ('PowerShell version:         {0}' -f $PSVersionTable.PSVersion.ToString())
@@ -120,10 +137,10 @@ task ShowInfo Init, {
 
 #region BuildRelease
 # Synopsis: Build a shippable release
-task Build GenerateRelease, UpdateManifest, CompileModule, Package
+task Build Init, GenerateRelease, UpdateManifest, CompileModule, UploadArtifacts
 
 # Synopsis: Generate ./Release structure
-task GenerateRelease Init, GenerateExternalHelp, {
+task GenerateRelease GenerateExternalHelp, {
     # Setup
     if (-not (Test-Path "$env:BHBuildOutput/$env:BHProjectName")) {
         $null = New-Item -Path "$env:BHBuildOutput/$env:BHProjectName" -ItemType Directory
@@ -137,11 +154,8 @@ task GenerateRelease Init, GenerateExternalHelp, {
         "$env:BHProjectPath/LICENSE"
         "$env:BHProjectPath/README.md"
     ) -Destination "$env:BHBuildOutput/$env:BHProjectName" -Force
-    Copy-Item -Path @(
-        # TODO: "$env:BHProjectPath/appveyor.yml"
-        "$env:BHProjectPath/PSScriptAnalyzerSettings.psd1"
-    ) -Destination $env:BHBuildOutput -Force
     # Copy Tests
+    Copy-Item -Path "$env:BHProjectPath/PSScriptAnalyzerSettings.psd1" -Destination $env:BHBuildOutput -Force
     $null = New-Item -Path "$env:BHBuildOutput/Tests" -ItemType Directory -ErrorAction SilentlyContinue
     Copy-Item -Path "$env:BHProjectPath/Tests" -Destination $env:BHBuildOutput -Recurse -Force
     # Remove all execptions from PSScriptAnalyzer
@@ -166,7 +180,7 @@ task CompileModule {
         }
 
         if ($capture) {
-            $compiled += "$line`n"
+            $compiled += "$line`r`n"
         }
     }
 
@@ -185,7 +199,7 @@ task CompileModule {
 }
 
 # Synopsis: Use PlatyPS to generate External-Help
-task GenerateExternalHelp Init, {
+task GenerateExternalHelp {
     Import-Module platyPS -Force
     foreach ($locale in (Get-ChildItem "$env:BHProjectPath/docs" -Attribute Directory)) {
         New-ExternalHelp -Path "$($locale.FullName)" -OutputPath "$env:BHModulePath/$($locale.Basename)" -Force
@@ -217,10 +231,37 @@ task Package GenerateRelease, {
     Remove-Item "$env:BHBuildOutput\$env:BHProjectName.zip" -ErrorAction SilentlyContinue
     $null = Compress-Archive -Path "$env:BHBuildOutput\$env:BHProjectName" -DestinationPath "$env:BHBuildOutput\$env:BHProjectName.zip"
 }
+
+# Synopsis: Upload build files as artifacts
+task UploadArtifacts -If ('AppVeyor' -eq $env:BHBuildSystem) {
+    Get-ChildItem $env:BHBuildOutput/$env:BHProjectName -File | % { Push-AppveyorArtifact $_.FullName }
+}
+
+# Synopsis: Download build module from artifacts
+task DownloadArtifacts -If ('AppVeyor' -eq $env:BHBuildSystem) GenerateExternalHelp, {
+    # Setup
+    if (-not (Test-Path "$env:BHBuildOutput/$env:BHProjectName")) {
+        $null = New-Item -Path "$env:BHBuildOutput/$env:BHProjectName" -ItemType Directory
+    }
+
+    Get-AppVeyorArtifact -Job $project.build.jobs[0] |
+        Get-AppVeyorArtifactFile -Job $project.build.jobs[0] -OutPath "$env:BHBuildOutput/$env:BHProjectName"
+
+    # Copy Documentation
+    foreach ($locale in (Get-ChildItem "$env:BHProjectPath/docs" -Attribute Directory)) {
+        Copy-Item -Path "$env:BHModulePath/$locale" -Destination "$env:BHBuildOutput/$env:BHProjectName" -Recurse -Force
+    }
+    # Copy Tests
+    Copy-Item -Path "$env:BHProjectPath/PSScriptAnalyzerSettings.psd1" -Destination $env:BHBuildOutput -Force
+    $null = New-Item -Path "$env:BHBuildOutput/Tests" -ItemType Directory -ErrorAction SilentlyContinue
+    Copy-Item -Path "$env:BHProjectPath/Tests" -Destination $env:BHBuildOutput -Recurse -Force
+    # Remove all execptions from PSScriptAnalyzer
+    BuildHelpers\Update-Metadata -Path "$env:BHBuildOutput/PSScriptAnalyzerSettings.psd1" -PropertyName ExcludeRules -Value ''
+}
 #endregion BuildRelease
 
 #region Test
-task Test Init, Build, {
+task Test Init, {
     Assert-True { Test-Path $env:BHBuildOutput -PathType Container } "Release path must exist"
 
     Remove-Module $env:BHProjectName -ErrorAction SilentlyContinue
@@ -246,7 +287,7 @@ task Test Init, Build, {
         }
         $testResults = Invoke-Pester @parameter
 
-        If ('AppVeyor' -eq $env:BHBuildSystem) {
+        if ('AppVeyor' -eq $env:BHBuildSystem) {
             BuildHelpers\Add-TestResultToAppveyor -TestFile $parameter["OutputFile"]
         }
 
@@ -255,25 +296,25 @@ task Test Init, Build, {
     catch {
         throw $_
     }
-
-    Set-BuildEnvironment -BuildOutput '$ProjectPath/Release' -ErrorAction SilentlyContinue
-}, RemoveTestResults
+}, RemoveTestResults, { Init }
 #endregion
 
 #region Publish
 # Synopsis: Publish a new release on github and the PSGallery
-task Deploy -If { Test-ShouldDeploy } Init, PublishToGallery, TagReplository, UpdateHomepage
+task Deploy -If ($shouldDeploy) Init, PublishToGallery, TagReplository, UpdateHomepage
 
-# Synipsis: Publish the $release to the PSGallery
+# Synpsis: Publish the $release to the PSGallery
 task PublishToGallery {
-    Assert-True ($env:PSGalleryAPIKey) "No key for the PSGallery"
+    Assert-True (-not [String]::IsNullOrEmpty($env:PSGalleryAPIKey)) "No key for the PSGallery"
+    Assert-True {Get-Module $env:BHProjectName -ListAvailable} "Module $env:BHProjectName is not available"
 
-    Remove-Module $env:BHProjectName -ErrorAction SilentlyContinue
+    Remove-Module $env:BHProjectName -ErrorAction Ignore
 
     Publish-Module -Name $env:BHProjectName -NuGetApiKey $env:PSGalleryAPIKey
 }
 
-task TagReplository GetNextVersion, {
+# Synopsis: push a tag with the version to the git repository
+task TagReplository GetNextVersion, Package, {
     $releaseText = "Release version $env:NextBuildVersion"
 
     # Push a tag to the repository
@@ -342,6 +383,11 @@ task RemoveTestResults {
 }
 #endregion
 
-task . ShowInfo, Clean, Build, Test, Deploy
+if (('AppVeyor' -eq $env:BHBuildSystem) -and ($env:APPVEYOR_JOB_ID -ne $project.build.jobs[0].JobId)) {
+    task . ShowInfo, Clean, DownloadArtifacts, Test, Deploy
+}
+else {
+    task . ShowInfo, Clean, Build, Test, Deploy
+}
 
 Remove-Item -Path Env:\BH*
