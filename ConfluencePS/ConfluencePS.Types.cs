@@ -54,10 +54,12 @@ namespace AtlassianPS
 
         public class User
         {
-            public User(String _UserName, String _DisplayName)
+            public User() { }
+
+            public User(String UserName, String DisplayName)
             {
-                UserName = _UserName;
-                DisplayName = _DisplayName;
+                this.UserName = UserName;
+                this.DisplayName = DisplayName;
             }
 
             public String UserName { get; set; }
