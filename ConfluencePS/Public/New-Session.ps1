@@ -3,7 +3,7 @@ function New-Session {
     [CmdletBinding()]
     [System.Diagnostics.CodeAnalysis.SuppressMessage('PSUseShouldProcessForStateChangingFunctions', '')]
     param(
-        [Parameter( Mandatory, ValueFromPipeline )]
+        [Parameter( Mandatory )]
         [ValidateNotNullOrEmpty()]
         [ArgumentCompleter(
             {
@@ -30,7 +30,7 @@ function New-Session {
     begin {
         Write-Verbose "Function started"
 
-        $resourceURi = "$($server.Uri)/rest/api/space"
+        $resourceURi = "/rest/api/space"
     }
 
     process {
