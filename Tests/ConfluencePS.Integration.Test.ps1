@@ -21,16 +21,19 @@ Describe 'Load Module' {
         Remove-Module ConfluencePS -ErrorAction SilentlyContinue
     }
 
-    # ACT
-    Import-Module "$PSScriptRoot\..\ConfluencePS" -Force -ErrorAction Stop
-
     #ASSERT
     It "imports the module" {
+        Import-Module "$PSScriptRoot\..\ConfluencePS" -Force -ErrorAction Stop
+
         Get-Module ConfluencePS | Should BeOfType [PSModuleInfo]
+        (Get-Module ConfluencePS).Prefix | Should Be "Confluence"
     }
 
     It "imports the module with custom prefix" {
         Import-Module "$PSScriptRoot\..\ConfluencePS" -Prefix "Wiki" -Force -ErrorAction Stop
+
+        (Get-Module ConfluencePS).Prefix | Should Be "Wiki"
+
         (Get-Command -Module ConfluencePS).Name | ForEach-Object {
             $_ -match "\-Wiki" | Should Be $true
         }
@@ -39,26 +42,6 @@ Describe 'Load Module' {
 
 Import-Module "$PSScriptRoot\..\ConfluencePS" -Force -ErrorAction Stop
 InModuleScope ConfluencePS {
-
-    Describe 'Set-ConfluenceInfo' {
-        # ARRANGE
-        # Could be a long one-liner, but breaking down for readability
-        $Pass = ConvertTo-SecureString -AsPlainText -Force -String $env:WikiPass
-        $Cred = New-Object -TypeName System.Management.Automation.PSCredential -ArgumentList ($env:WikiUser, $Pass)
-
-        # ACT
-        Set-ConfluenceInfo -BaseURI $env:WikiURI -Credential $Cred
-
-        # ASSERT
-        It 'credentials are stored' {
-            $PSDefaultParameterValues["Get-ConfluencePage:Credential"] | Should BeOfType [PSCredential]
-            #TODO: extend this
-        }
-        It 'url is stored' {
-            $global:PSDefaultParameterValues["Get-ConfluencePage:ApiURi"] | Should BeOfType [String]
-            $global:PSDefaultParameterValues["Get-ConfluencePage:ApiURi"] -match "^https?://.*\/rest\/api$" | Should Be $true
-        }
-    }
 
     Describe 'New-ConfluenceSpace' {
         # ARRANGE
