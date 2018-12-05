@@ -3,7 +3,7 @@ function Set-TlsLevel {
     .SYNOPSIS
         Enable TLS1.2 support and store the previous value so we can revert the change
     #>
-    [CmdletBinding( SupportsShouldProcess )]
+    [CmdletBinding( SupportsShouldProcess = $false )]
     [OutputType( [void] )]
     [System.Diagnostics.CodeAnalysis.SuppressMessage('PSUseShouldProcessForStateChangingFunctions', '')]
     param (

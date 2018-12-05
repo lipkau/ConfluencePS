@@ -129,10 +129,10 @@ function Invoke-Method {
             }
         }
 
-        Set-TlsLevel -Tls12
-
         Write-DebugMessage "ParameterSetName: $($PsCmdlet.ParameterSetName)"
         Write-DebugMessage "PSBoundParameters: $($PSBoundParameters | Out-String)"
+
+        Set-TlsLevel -Tls12
 
         $server = Get-AtlassianServerConfiguration -ErrorAction Stop 4>$null 5>$null |
             Where-Object Type -eq "CONFLUENCE" |
@@ -150,6 +150,11 @@ function Invoke-Method {
         }
 
         [Uri]$Uri = "{0}{1}" -f $server.Uri, $Uri
+
+        # Sanitize double slash `//`
+        # Happens when the BaseUri is the domain name
+        # [Uri]"http://google.com" vs [Uri]"http://google.com/foo"
+        $URi = $URi -replace '(?<!:)\/\/', '/'
 
         # load DefaultParameters for Invoke-WebRequest
         # as the global PSDefaultParameterValues is not used
