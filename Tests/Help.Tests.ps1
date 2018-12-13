@@ -1,7 +1,7 @@
 #requires -modules BuildHelpers
 #requires -modules Pester
 
-Describe "Help tests" -Tag Documentation {
+Describe "Help tests" -Tag Documentation, Build {
 
     BeforeAll {
         Remove-Item -Path Env:\BH*

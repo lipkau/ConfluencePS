@@ -4,7 +4,7 @@
 #requires -modules BuildHelpers
 #requires -modules Pester
 
-Describe "General project validation" -Tag Unit {
+Describe "General project validation" -Tag Build {
 
     BeforeAll {
         Remove-Item -Path Env:\BH*

@@ -1,7 +1,7 @@
 #requires -modules BuildHelpers
 #requires -modules Pester
 
-Describe "Validation of code styling" {
+Describe "Validation of code styling" -Tag Build {
 
     BeforeAll {
         Remove-Item -Path Env:\BH*

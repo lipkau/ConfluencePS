@@ -2,7 +2,7 @@
 #requires -modules Pester
 #requires -modules PSScriptAnalyzer
 
-Describe "PSScriptAnalyzer Tests" -Tag Unit {
+Describe "PSScriptAnalyzer Tests" -Tag Build {
 
     BeforeAll {
         Remove-Item -Path Env:\BH*

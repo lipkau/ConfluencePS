@@ -1,7 +1,7 @@
 #requires -modules BuildHelpers
 #requires -modules Pester
 
-Describe "Validation of example codes in the documentation" -Tag Documentation, NotImplemented {
+Describe "Validation of example codes in the documentation" -Tag Documentation, Build, NotImplemented {
 
     BeforeAll {
         Remove-Item -Path Env:\BH*

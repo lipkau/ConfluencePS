@@ -357,8 +357,8 @@ Describe 'Integration Tests' -Tag Integration {
         $GetTitle2 = Get-ConfluencePage -Title $Title2 -SpaceKey $SpaceKey -ErrorAction SilentlyContinue
         $GetPartial = Get-ConfluencePage -Title $Title4 -SpaceKey $SpaceKey -ErrorAction SilentlyContinue
         $GetWildcard = Get-ConfluencePage -Title $Title5 -SpaceKey $SpaceKey -ErrorAction SilentlyContinue
-        $GetID1 = Get-ConfluencePage -PageID $GetTitle1.ID -ErrorAction SilentlyContinue
-        $GetID2 = Get-ConfluencePage -PageID $GetTitle2.ID -ErrorAction SilentlyContinue
+        $GetID1 = Get-ConfluencePage -Page $GetTitle1.ID -ErrorAction SilentlyContinue
+        $GetID2 = Get-ConfluencePage -Page $GetTitle2.ID -ErrorAction SilentlyContinue
         $GetKeys = Get-ConfluencePage -SpaceKey $SpaceKey -ErrorAction SilentlyContinue | Sort-Object ID
         $GetByLabel = Get-ConfluencePage -Label "important" -ErrorAction SilentlyContinue
         $GetByQuery = Get-ConfluencePage -Query $query -ErrorAction SilentlyContinue
@@ -488,9 +488,9 @@ Describe 'Integration Tests' -Tag Integration {
         $PartialLabel = "pest"
 
         # ACT
-        $NewLabel1 = Add-ConfluenceLabel -Label $Label1 -PageID $Page1.ID -ErrorAction SilentlyContinue
+        $NewLabel1 = Add-ConfluenceLabel -Label $Label1 -Page $Page1.ID -ErrorAction SilentlyContinue
         $NewLabel2 = Get-ConfluencePage -SpaceKey $SpaceKey | Add-ConfluenceLabel -Label $Label2 -ErrorAction SilentlyContinue
-        $NewLabel3 = (Get-ConfluenceSpace -SpaceKey $SpaceKey).Homepage | Get-ConfluenceLabel | Add-ConfluenceLabel -PageID $Page1.ID -ErrorAction SilentlyContinue
+        $NewLabel3 = (Get-ConfluenceSpace -SpaceKey $SpaceKey).Homepage | Get-ConfluenceLabel | Add-ConfluenceLabel -Page $Page1.ID -ErrorAction SilentlyContinue
 
         # ASSERT
         It 'returns the correct amount of results' {
@@ -534,7 +534,7 @@ Describe 'Integration Tests' -Tag Integration {
         $Before1 = $Page1 | Get-ConfluenceLabel
 
         # ACT
-        $After1 = Set-ConfluenceLabel -PageID $Page1.ID -Label $Label1 -ErrorAction Stop
+        $After1 = Set-ConfluenceLabel -Page $Page1.ID -Label $Label1 -ErrorAction Stop
         $After2 = $Page1 | Set-ConfluenceLabel -Label $Label2 -ErrorAction Stop
 
         # ASSERT
@@ -572,7 +572,7 @@ Describe 'Integration Tests' -Tag Integration {
         $Page = Get-ConfluencePage -Title "Pester New Page Piped" -SpaceKey $SpaceKey
 
         # ACT
-        $GetPageLabel1 = Get-ConfluenceLabel -PageID $Page.ID
+        $GetPageLabel1 = Get-ConfluenceLabel -Page $Page.ID
         $GetPageLabel2 = Get-ConfluencePage -SpaceKey $SpaceKey | Get-ConfluenceLabel
 
         # ASSERT
@@ -670,14 +670,14 @@ Describe 'Integration Tests' -Tag Integration {
         # change the title of a page by property - this page should have version 4
         $SetPage3 = $Page3.ID | Set-ConfluencePage -Body $RawContent3 -Convert
         # change the parent page by object
-        $SetPage4 = Set-ConfluencePage -PageID $Page4.ID -Parent $Page3
+        $SetPage4 = Set-ConfluencePage -Page $Page4.ID -Parent $Page3
         # change the parent page by pageid
-        $SetPage5 = Set-ConfluencePage -PageID $Page5.ID -ParentID $Page4.ID
+        $SetPage5 = Set-ConfluencePage -Page $Page5.ID -ParentID $Page4.ID
         # change the title of a page
         $SetPage6 = $Page6.ID | Set-ConfluencePage -Title $NewTitle6
         $SetPage7 = $AllChangedPages | Where-Object {$_.ID -eq $Page7.ID} | Set-PageContent -Title $NewTitle7 | Set-ConfluencePage
         # clear the body of a page
-        $SetPage8 = Set-ConfluencePage -PageID $Page8.ID -Body ""
+        $SetPage8 = Set-ConfluencePage -Page $Page8.ID -Body ""
 
         # ASSERT
         It 'returns the correct amount of results' {
@@ -814,12 +814,12 @@ Describe 'Integration Tests' -Tag Integration {
         $ExcelFile = Get-Item -Path "$PSScriptRoot/resources/Test.xlsx"
 
         # ACT
-        $result1 = Add-ConfluenceAttachment -PageId $Page1.Id -FilePath $TextFile.FullName -ErrorAction Stop
-        $result2 = Add-ConfluenceAttachment -PageId $Page1.Id -FilePath $ImageFile.FullName, $ExcelFile.FullName -ErrorAction Stop
+        $result1 = Add-ConfluenceAttachment -Page $Page1.Id -FilePath $TextFile.FullName -ErrorAction Stop
+        $result2 = Add-ConfluenceAttachment -Page $Page1.Id -FilePath $ImageFile.FullName, $ExcelFile.FullName -ErrorAction Stop
         $result3 = Add-ConfluenceAttachment $Page2.Id -FilePath $TextFile.FullName -ErrorAction Stop
         $result4 = $Page2 | Add-ConfluenceAttachment -FilePath $ImageFile.FullName -ErrorAction Stop
         $result5 = $Page3 | Add-ConfluenceAttachment -FilePath $ImageFile.FullName, $ExcelFile.FullName -ErrorAction Stop
-        $result6 = $TextFile, $ImageFile, $ExcelFile | Add-ConfluenceAttachment -PageId $Page4.Id -ErrorAction Stop
+        $result6 = $TextFile, $ImageFile, $ExcelFile | Add-ConfluenceAttachment -Page $Page4.Id -ErrorAction Stop
 
         # ASSERT
         It 'attaches a file to a page' {
@@ -865,14 +865,14 @@ Describe 'Integration Tests' -Tag Integration {
             ([Uri]$result1.URL).AbsoluteUri | Should Not BeNullOrEmpty
         }
         It 'throws if the file does not exist' {
-            { Add-ConfluenceAttachment -PageId $Page1.Id -FilePath "$PSScriptRoot/non-existing.file" } | Should Throw
+            { Add-ConfluenceAttachment -Page $Page1.Id -FilePath "$PSScriptRoot/non-existing.file" } | Should Throw
         }
         It 'throws if the item to attach is not a file' {
-            { Add-ConfluenceAttachment -PageId $Page1.Id -FilePath "$PSScriptRoot" } | Should Throw
+            { Add-ConfluenceAttachment -Page $Page1.Id -FilePath "$PSScriptRoot" } | Should Throw
         }
         It 'fails if the page already has the file attached' {
-            { Add-ConfluenceAttachment -PageId $Page1.Id -FilePath $TextFile.FullName -ErrorAction Stop } | Should Throw
-            { Add-ConfluenceAttachment -PageId $Page1.Id -FilePath $TextFile.FullName -ErrorAction SilentlyContinue } | Should Not Throw
+            { Add-ConfluenceAttachment -Page $Page1.Id -FilePath $TextFile.FullName -ErrorAction Stop } | Should Throw
+            { Add-ConfluenceAttachment -Page $Page1.Id -FilePath $TextFile.FullName -ErrorAction SilentlyContinue } | Should Not Throw
         }
     }
 
@@ -885,8 +885,8 @@ Describe 'Integration Tests' -Tag Integration {
         $Page4 = Get-ConfluencePage -SpaceKey $SpaceKey -Title "Pester New Page with Parent Object" -ErrorAction Stop
 
         # ACT
-        $result1 = Get-ConfluenceAttachment -PageId $Page1.Id -ErrorAction Stop
-        $result2 = Get-ConfluenceAttachment -PageId $Page2.Id, $Page3.Id -ErrorAction Stop
+        $result1 = Get-ConfluenceAttachment -Page $Page1.Id -ErrorAction Stop
+        $result2 = Get-ConfluenceAttachment -Page $Page2.Id, $Page3.Id -ErrorAction Stop
         $result3 = $Page3, $Page4 | Get-ConfluenceAttachment -ErrorAction Stop
         $result4 = $Page1, $Page2, $Page3, $Page4 | Get-ConfluenceAttachment -FileNameFilter "Test.xlsx" -ErrorAction Stop
         $result5 = $Page1, $Page2, $Page3, $Page4 | Get-ConfluenceAttachment -MediaTypeFilter "text/plain" -ErrorAction Stop
@@ -1036,18 +1036,18 @@ Describe 'Integration Tests' -Tag Integration {
         $Page1 = Get-ConfluencePage -SpaceKey $SpaceKey -Title "Pester New Page Piped" -ErrorAction Stop
         $Page2 = Get-ConfluencePage -SpaceKey $SpaceKey -Title "Pester New Page Orphan" -ErrorAction Stop
         $Page3 = Get-ConfluencePage -SpaceKey $SpaceKey -Title "Pester New Page from Object" -ErrorAction Stop
-        $preAttachments1 = Get-ConfluenceAttachment -PageId $Page1.Id -ErrorAction Stop
-        $preAttachments2 = Get-ConfluenceAttachment -PageId $Page2.Id -ErrorAction Stop
-        $preAttachments3 = Get-ConfluenceAttachment -PageId $Page3.Id -ErrorAction Stop
+        $preAttachments1 = Get-ConfluenceAttachment -Page $Page1.Id -ErrorAction Stop
+        $preAttachments2 = Get-ConfluenceAttachment -Page $Page2.Id -ErrorAction Stop
+        $preAttachments3 = Get-ConfluenceAttachment -Page $Page3.Id -ErrorAction Stop
 
         # ACT
         Remove-ConfluenceAttachment -Attachment $preAttachments1[0] -ErrorAction Stop
         Remove-ConfluenceAttachment $preAttachments2 -ErrorAction Stop
         $preAttachments3 | Remove-ConfluenceAttachment -ErrorAction Stop
 
-        $postAttachments1 = Get-ConfluenceAttachment -PageId $Page1.Id -ErrorAction SilentlyContinue
-        $postAttachments2 = Get-ConfluenceAttachment -PageId $Page2.Id -ErrorAction SilentlyContinue
-        $postAttachments3 = Get-ConfluenceAttachment -PageId $Page3.Id -ErrorAction SilentlyContinue
+        $postAttachments1 = Get-ConfluenceAttachment -Page $Page1.Id -ErrorAction SilentlyContinue
+        $postAttachments2 = Get-ConfluenceAttachment -Page $Page2.Id -ErrorAction SilentlyContinue
+        $postAttachments3 = Get-ConfluenceAttachment -Page $Page3.Id -ErrorAction SilentlyContinue
 
         # ASSERT
         It 'removes an Attachment' {
@@ -1075,7 +1075,7 @@ Describe 'Integration Tests' -Tag Integration {
         # ACT
         $Before1 = $Page1 | Get-ConfluenceLabel -ErrorAction SilentlyContinue
         $Before2 = $Page2 | Get-ConfluenceLabel -ErrorAction SilentlyContinue
-        Remove-ConfluenceLabel -Label $Label1 -PageID $Page1.ID -ErrorAction SilentlyContinue
+        Remove-ConfluenceLabel -Label $Label1 -Page $Page1.ID -ErrorAction SilentlyContinue
         $Page2 | Remove-ConfluenceLabel -ErrorAction SilentlyContinue
         $After1 = $Page1 | Get-ConfluenceLabel -ErrorAction SilentlyContinue
         $After2 = $Page2 | Get-ConfluenceLabel -ErrorAction SilentlyContinue
@@ -1099,7 +1099,7 @@ Describe 'Integration Tests' -Tag Integration {
         $Before = Get-ConfluencePage -SpaceKey $SpaceKey -ErrorAction Stop
 
         # ACT
-        Remove-ConfluencePage -PageID $PageID.ID -ErrorAction SilentlyContinue
+        Remove-ConfluencePage -Page $PageID.ID -ErrorAction SilentlyContinue
         Get-ConfluencePage -SpaceKey $SpaceKey | Remove-ConfluencePage -ErrorAction SilentlyContinue
         $After = Get-ConfluencePage -SpaceKey $SpaceKey -ErrorAction SilentlyContinue
 
