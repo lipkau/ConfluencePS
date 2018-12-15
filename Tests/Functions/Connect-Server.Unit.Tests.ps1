@@ -1,5 +1,5 @@
 #requires -modules BuildHelpers
-#requires -modules @{ ModuleName = "Pester"; ModuleVersion = "4.3.1" }
+#requires -modules @{ ModuleName = "Pester"; ModuleVersion = "4.4.2" }
 [Diagnostics.CodeAnalysis.SuppressMessageAttribute(
     "PSAvoidUsingConvertToSecureStringWithPlainText",
     "",
@@ -39,144 +39,142 @@ Describe "Connect-Server" -Tag Unit {
         Remove-Item -Path Env:\BH*
     }
 
-    InModuleScope $env:BHProjectName {
+    #region Mocking
+    Mock Write-DebugMessage -ModuleName $env:BHProjectName {}
+    Mock Write-Verbose -ModuleName $env:BHProjectName {}
 
-        #region Mocking
-        Mock Write-DebugMessage -ModuleName $env:BHProjectName {}
-        Mock Write-Verbose -ModuleName $env:BHProjectName {}
+    Mock New-Session -ModuleName $env:BHProjectName {}
+    Mock Invoke-Method -ModuleName $env:BHProjectName { throw "Unwanted call to Invoke-Method" }
+    #endregion Mocking
 
-        Mock New-Session -ModuleName $env:BHProjectName {}
-        #endregion Mocking
+    Context "Sanity checking" {
 
-        Context "Sanity checking" {
+        $command = Get-Command -Name Connect-ConfluenceServer
 
-            $command = Get-Command -Name Connect-Server
-
-            It "has a [String] -ServerName parameter" {
-                $command.Parameters.ContainsKey("ServerName")
-                $command.Parameters["ServerName"].ParameterType | Should -Be "String"
-            }
-
-            It "has an ArgumentCompleter for -ServerName" {
-                $command.Parameters["ServerName"].Attributes |
-                    Where-Object {$_ -is [ArgumentCompleter]} |
-                    Should -Not -BeNullOrEmpty
-            }
-
-            It "has a [PSCredential] -Credential parameter" {
-                $command.Parameters.ContainsKey('Credential')
-                $command.Parameters["Credential"].ParameterType | Should -Be "PSCredential"
-            }
+        It "has a [String] -ServerName parameter" {
+            $command.Parameters.ContainsKey("ServerName")
+            $command.Parameters["ServerName"].ParameterType | Should -Be "String"
         }
 
-        Context "Behavior checking" {
-
-            #region Arrange
-            BeforeEach {
-                $script:DefaultServer = "wrongValue"
-            }
-            $Pass = ConvertTo-SecureString -AsPlainText -Force -String "lorem ipsum"
-            $Cred = New-Object -TypeName System.Management.Automation.PSCredential -ArgumentList ("user", $Pass)
-            #endregion Arrange
-
-            It "sets the ServerName as default" {
-                $script:DefaultServer | Should -Not -Be "TestServer"
-
-                Connect-Server -ServerName "TestServer"
-
-                $script:DefaultServer | Should -Be "TestServer"
-            }
-
-            It "creates a new Session for ServerName" {
-                Connect-Server -ServerName "TestServer" -Credential $Cred
-
-                $assertMockCalledSplat = @{
-                    CommandName = "New-Session"
-                    ModuleName  = $env:BHProjectName
-                    Exactly     = $true
-                    Times       = 1
-                    Scope       = 'It'
-                }
-                Assert-MockCalled @assertMockCalledSplat
-            }
+        It "has an ArgumentCompleter for -ServerName" {
+            $command.Parameters["ServerName"].Attributes |
+                Where-Object {$_ -is [ArgumentCompleter]} |
+                Should -Not -BeNullOrEmpty
         }
 
-        Context "Parameter checking" {
+        It "has a [PSCredential] -Credential parameter" {
+            $command.Parameters.ContainsKey('Credential')
+            $command.Parameters["Credential"].ParameterType | Should -Be "PSCredential"
+        }
+    }
 
-            #region Arrange
-            BeforeAll {
-                # backup current configuration
-                & (Get-Module AtlassianPS.Configuration) {
-                    $script:previousConfig = $script:Configuration
-                    $script:Configuration = @{}
-                    $script:Configuration.Add("ServerList",[System.Collections.Generic.List[AtlassianPS.ServerData]]::new())
-                }
-                Add-AtlassianServerConfiguration -Name "lorem" -Uri "https://google.com" -Type CONFLUENCE -ErrorAction Stop
+    Context "Behavior checking" {
+
+        #region Arrange
+        BeforeEach {
+            & (Get-Module $env:BHProjectName) { $script:DefaultServer = "wrongValue" }
+        }
+        $Pass = ConvertTo-SecureString -AsPlainText -Force -String "lorem ipsum"
+        $Cred = New-Object -TypeName System.Management.Automation.PSCredential -ArgumentList ("user", $Pass)
+        #endregion Arrange
+
+        It "sets the ServerName as default" {
+            & (Get-Module $env:BHProjectName) { $script:DefaultServer } | Should -Not -Be "TestServer"
+
+            Connect-ConfluenceServer -ServerName "TestServer"
+
+            & (Get-Module $env:BHProjectName) { $script:DefaultServer } | Should -Be "TestServer"
+        }
+
+        It "creates a new Session for ServerName" {
+            Connect-ConfluenceServer -ServerName "TestServer" -Credential $Cred
+
+            $assertMockCalledSplat = @{
+                CommandName = "New-Session"
+                ModuleName  = $env:BHProjectName
+                Exactly     = $true
+                Times       = 1
+                Scope       = 'It'
             }
-            AfterAll {
-                #restore previous configuration
-                & (Get-Module AtlassianPS.Configuration) {
-                    $script:Configuration = $script:previousConfig
-                    Save-Configuration
-                }
+            Assert-MockCalled @assertMockCalledSplat
+        }
+    }
+
+    Context "Parameter checking" {
+
+        #region Arrange
+        BeforeAll {
+            # backup current configuration
+            & (Get-Module AtlassianPS.Configuration) {
+                $script:previousConfig = $script:Configuration
+                $script:Configuration = @{}
+                $script:Configuration.Add("ServerList",[System.Collections.Generic.List[AtlassianPS.ServerData]]::new())
             }
-            BeforeEach {
-                $script:DefaultServer = "wrongValue"
+            Add-AtlassianServerConfiguration -Name "lorem" -Uri "https://google.com" -Type CONFLUENCE -ErrorAction Stop
+        }
+        AfterAll {
+            #restore previous configuration
+            & (Get-Module AtlassianPS.Configuration) {
+                $script:Configuration = $script:previousConfig
+                Save-Configuration
             }
-            $Pass = ConvertTo-SecureString -AsPlainText -Force -String "lorem ipsum"
-            $Cred = New-Object -TypeName System.Management.Automation.PSCredential -ArgumentList ("user", $Pass)
-            #endregion Arrange
+        }
+        BeforeEach {
+            & (Get-Module $env:BHProjectName) { $script:DefaultServer = "wrongValue" }
+        }
+        $Pass = ConvertTo-SecureString -AsPlainText -Force -String "lorem ipsum"
+        $Cred = New-Object -TypeName System.Management.Automation.PSCredential -ArgumentList ("user", $Pass)
+        #endregion Arrange
 
-            It "does not allow an empty ServerName" {
-                { Connect-Server -ServerName "" } | Should -Throw
+        It "does not allow an empty ServerName" {
+            { Connect-ConfluenceServer -ServerName "" } | Should -Throw
+        }
+
+        It "does not allow a null ServerName" {
+            { Connect-ConfluenceServer -ServerName $null } | Should -Throw
+        }
+
+        It "accepts ServerName over the pipeline" {
+            & (Get-Module $env:BHProjectName) { $script:DefaultServer } | Should -Not -Be "TestServer"
+
+            "TestServer" | Connect-ConfluenceServer
+
+            & (Get-Module $env:BHProjectName) { $script:DefaultServer } | Should -Be "TestServer"
+        }
+
+        It "completes ServerName arguments" {
+            $command = Get-Command -Name Connect-ConfluenceServer
+            $argumentCompleter = $command.Parameters["ServerName"].Attributes |
+                Where-Object {$_ -is [ArgumentCompleter]}
+            $completion = & $argumentCompleter.ScriptBlock
+
+            $completion.CompletionText | Should -Contain "lorem"
+        }
+
+        It "does not create a Session for null Credential" {
+            Connect-ConfluenceServer -ServerName "TestServer" -Credential $null
+
+            $assertMockCalledSplat = @{
+                CommandName = "New-Session"
+                ModuleName  = $env:BHProjectName
+                Exactly     = $true
+                Times       = 0
+                Scope       = 'It'
             }
+            Assert-MockCalled @assertMockCalledSplat
+        }
 
-            It "does not allow a null ServerName" {
-                { Connect-Server -ServerName $null } | Should -Throw
+        It "does not create a Session for empty Credential" {
+            Connect-ConfluenceServer -ServerName "TestServer" -Credential ([System.Management.Automation.PSCredential]::Empty)
+
+            $assertMockCalledSplat = @{
+                CommandName = "New-Session"
+                ModuleName  = $env:BHProjectName
+                Exactly     = $true
+                Times       = 0
+                Scope       = 'It'
             }
-
-            It "accepts ServerName over the pipeline" {
-                $script:DefaultServer | Should -Not -Be "TestServer"
-
-                "TestServer" | Connect-Server
-
-                $script:DefaultServer | Should -Be "TestServer"
-            }
-
-            It "completes ServerName arguments" {
-                Get-Command -Name Connect-Server
-                $argumentCompleter = $command.Parameters["ServerName"].Attributes |
-                    Where-Object {$_ -is [ArgumentCompleter]}
-                $completion = & $argumentCompleter.ScriptBlock
-
-                $completion.CompletionText | Should -Contain "lorem"
-            }
-
-            It "does not create a Session for null Credential" {
-                Connect-Server -ServerName "TestServer" -Credential $null
-
-                $assertMockCalledSplat = @{
-                    CommandName = "New-Session"
-                    ModuleName  = $env:BHProjectName
-                    Exactly     = $true
-                    Times       = 0
-                    Scope       = 'It'
-                }
-                Assert-MockCalled @assertMockCalledSplat
-            }
-
-            It "does not create a Session for empty Credential" {
-                Connect-Server -ServerName "TestServer" -Credential ([System.Management.Automation.PSCredential]::Empty)
-
-                $assertMockCalledSplat = @{
-                    CommandName = "New-Session"
-                    ModuleName  = $env:BHProjectName
-                    Exactly     = $true
-                    Times       = 0
-                    Scope       = 'It'
-                }
-                Assert-MockCalled @assertMockCalledSplat
-            }
+            Assert-MockCalled @assertMockCalledSplat
         }
     }
 }
