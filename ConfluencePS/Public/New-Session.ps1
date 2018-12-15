@@ -37,7 +37,7 @@ function New-Session {
         Write-DebugMessage "ParameterSetName: $($PsCmdlet.ParameterSetName)"
         Write-DebugMessage "PSBoundParameters: $($PSBoundParameters | Out-String)"
 
-        $parameter = @{
+        $iwParameters = @{
             URI          = $resourceURi
             ServerName   = $ServerName
             Method       = "GET"
@@ -45,8 +45,8 @@ function New-Session {
             StoreSession = $true
             Credential   = $Credential
         }
-        Write-DebugMessage "Invoking Method with `$parameter" -BreakPoint
-        Invoke-Method @parameter
+        Write-DebugMessage "Invoking Method with `$iwParameters" -BreakPoint
+        Invoke-Method @iwParameters
     }
 
     end {
