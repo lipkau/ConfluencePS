@@ -1,147 +1,185 @@
 function Get-Page {
-    [CmdletBinding(
-        SupportsPaging = $true,
-        DefaultParameterSetName = "byId"
-    )]
-    [OutputType([ConfluencePS.Page])]
-    param (
-        [Parameter( Mandatory = $true )]
-        [URi]$ApiURi,
-
-        [Parameter( Mandatory = $true )]
-        [PSCredential]$Credential,
-
-        [Parameter(
-            Position = 0,
-            Mandatory = $true,
-            ParameterSetName = "byId",
-            ValueFromPipeline = $true,
-            ValueFromPipelineByPropertyName = $true
-        )]
-        [ValidateRange(1, [int]::MaxValue)]
+    # .ExternalHelp ..\ConfluencePS-help.xml
+    [CmdletBinding( SupportsPaging, DefaultParameterSetName = "byId" )]
+    [OutputType([AtlassianPS.ConfluencePS.Page])]
+    param(
+        [Parameter( Position = 0, Mandatory, ValueFromPipeline, ParameterSetName = "byId" )]
         [Alias('ID')]
-        [int[]]$PageID,
+        [AtlassianPS.ConfluencePS.Page[]]
+        $Page,
 
-        [Parameter(
-            ParameterSetName = "bySpace"
-        )]
-        [Parameter(
-            ParameterSetName = "bySpaceObject"
-        )]
+        [Parameter( ParameterSetName = "bySpace" )]
         [Alias('Name')]
-        [string]$Title,
+        [String]
+        $Title,
 
-        [Parameter(
-            Mandatory = $true,
-            ParameterSetName = "bySpace"
-        )]
-        [Parameter(
-            ParameterSetName = "byLabel"
-        )]
+        [Parameter( Mandatory, ParameterSetName = "bySpace" )]
+        [Parameter( ParameterSetName = "byLabel" )]
         [Alias('Key')]
-        [string]$SpaceKey,
+        [AtlassianPS.ConfluencePS.Space]
+        $Space,
 
-        [Parameter(
-            Mandatory = $true,
-            ValueFromPipeline = $true,
-            ValueFromPipelineByPropertyName = $true,
-            ParameterSetName = "bySpaceObject"
-        )]
-        [Parameter(
-            ValueFromPipeline = $true,
-            ParameterSetName = "byLabel"
-        )]
-        [ConfluencePS.Space]$Space,
+        [Parameter( Mandatory, ParameterSetName = "byLabel" )]
+        [String[]]
+        $Label,
 
-        [Parameter(
-            Mandatory = $true,
-            ParameterSetName = "byLabel"
-        )]
-        [string[]]$Label,
+        [Parameter( Mandatory, ParameterSetName = "byQuery" )]
+        [String]$Query,
 
-        [Parameter(
-            Position = 0,
-            Mandatory = $true,
-            ParameterSetName = "byQuery"
-        )]
-        [string]$Query,
+        [UInt32]
+        $PageSize = (Get-AtlassianConfiguration -Name "ConfluencePS" -ValueOnly)["PageSize"],
 
-        [ValidateRange(1, [int]::MaxValue)]
-        [int]$PageSize = 25
+        [Parameter()]
+        [ValidateNotNullOrEmpty()]
+        [ArgumentCompleter(
+            {
+                param($commandName, $parameterName, $wordToComplete, $commandAst, $fakeBoundParameter)
+                $command = Get-Command "Get-*ServerConfiguration" -Module AtlassianPS.Configuration
+                & $command.Name |
+                    Where-Object { $_.Type -eq [AtlassianPS.ServerType]"Confluence" } |
+                    Where-Object { $_.Name -like "$wordToComplete*" } |
+                    ForEach-Object { [System.Management.Automation.CompletionResult]::new( $_.Name, $_.Name, [System.Management.Automation.CompletionResultType]::ParameterValue, $_.Name ) }
+            }
+        )]
+        [String]
+        $ServerName = (Get-DefaultServer),
+
+        [Parameter()]
+        [System.Management.Automation.PSCredential]
+        [System.Management.Automation.Credential()]
+        $Credential = [System.Management.Automation.PSCredential]::Empty
     )
 
-    BEGIN {
-        Write-Verbose "[$($MyInvocation.MyCommand.Name)] Function started"
+    begin {
+        Write-Verbose "Function started"
 
-        $resourceApi = "$apiURi/content{0}"
+        $resourceApi = "/rest/api/content{0}"
     }
 
-    PROCESS {
-        Write-Debug "[$($MyInvocation.MyCommand.Name)] ParameterSetName: $($PsCmdlet.ParameterSetName)"
-        Write-Debug "[$($MyInvocation.MyCommand.Name)] PSBoundParameters: $($PSBoundParameters | Out-String)"
-
-        if ($Space -is [ConfluencePS.Space] -and ($Space.Key)) {
-            $SpaceKey = $Space.Key
-        }
+    process {
+        Write-DebugMessage "ParameterSetName: $($PsCmdlet.ParameterSetName)"
+        Write-DebugMessage "PSBoundParameters: $($PSBoundParameters | Out-String)"
 
         $iwParameters = @{
             Uri           = ""
+            ServerName    = $ServerName
             Method        = 'Get'
-            GetParameters = @{
+            GetParameter = @{
                 expand = "space,version,body.storage,ancestors"
                 limit  = $PageSize
             }
-            OutputType    = [ConfluencePS.Page]
+            OutputType    = [AtlassianPS.ConfluencePS.Page]
             Credential    = $Credential
+            Verbose       = $false
         }
 
-        # Paging
-        ($PSCmdlet.PagingParameters | Get-Member -MemberType Property).Name | ForEach-Object {
-            $iwParameters[$_] = $PSCmdlet.PagingParameters.$_
-        }
-
-        switch -regex ($PsCmdlet.ParameterSetName) {
+        switch ($PsCmdlet.ParameterSetName) {
             "byId" {
-                foreach ($_pageID in $PageID) {
-                    $iwParameters["Uri"] = $resourceApi -f "/$_pageID"
+                foreach ($_page in $Page) {
+                    if ( -not (Get-Member -InputObject $_page -Name Id) -or -not ($_page.ID)) {
+                        $writeErrorSplat = @{
+                            ExceptionType = "System.ApplicationException"
+                            Message       = "Page is missing the Id"
+                            ErrorId       = "AtlassianPS.ConfluencePS.MissingProperty"
+                            Category      = "InvalidData"
+                            Cmdlet        = $PSCmdlet
+                        }
+                        WriteError @writeErrorSplat
+                        continue
+                    }
 
+                    $iwParameters["Uri"] = $resourceApi -f "/$($_page.ID)"
+
+                    Write-DebugMessage "Invoking API Method with `$iwParameters" -BreakPoint
                     Invoke-Method @iwParameters
                 }
                 break
             }
-            "bySpace" { # This includes 'bySpaceObject'
-                $iwParameters["Uri"] = $resourceApi -f ''
-                $iwParameters["GetParameters"]["type"] = "page"
-                if ($SpaceKey) { $iwParameters["GetParameters"]["spaceKey"] = $SpaceKey }
-                if ($Title) { $iwParameters["GetParameters"]["title"] = $Title }
+            "bySpace" {
+                if ( -not (Get-Member -InputObject $Space -Name Key) -or -not ($Space.Key)) {
+                    $writeErrorSplat = @{
+                        ExceptionType = "System.ApplicationException"
+                        Message       = "Space is missing the Key"
+                        ErrorId       = "AtlassianPS.ConfluencePS.MissingProperty"
+                        Category      = "InvalidData"
+                        Cmdlet        = $PSCmdlet
+                    }
+                    WriteError @writeErrorSplat
+                    continue
+                }
 
-                Invoke-Method @iwParameters
+                # Paging
+                ($PSCmdlet.PagingParameters | Get-Member -MemberType Property).Name | ForEach-Object {
+                    $iwParameters[$_] = $PSCmdlet.PagingParameters.$_
+                }
+                $iwParameters["Paging"] = $true
+
+                $iwParameters["Uri"] = $resourceApi -f ''
+                $iwParameters["GetParameter"] = @{
+                    type = "page"
+                    spaceKey = $Space.Key
+                }
+
+                Write-DebugMessage "Invoking API Method with `$iwParameters" -BreakPoint
+                if ($Title) {
+                    Invoke-Method @iwParameters | Where-Object { $_.Title -like $Title }
+                }
+                else {
+                    Invoke-Method @iwParameters
+                }
                 break
             }
             "byLabel" {
+                # Paging
+                ($PSCmdlet.PagingParameters | Get-Member -MemberType Property).Name | ForEach-Object {
+                    $iwParameters[$_] = $PSCmdlet.PagingParameters.$_
+                }
+                $iwParameters["Paging"] = $true
+
                 $iwParameters["Uri"] = $resourceApi -f "/search"
 
                 $CQLparameters = @("type=page", "label=$Label")
-                if ($SpaceKey) {$CQLparameters += "space=$SpaceKey"}
+                if ($Space) {
+                    if ( -not (Get-Member -InputObject $Space -Name Key) -or -not ($Space.Key)) {
+                        $writeErrorSplat = @{
+                            ExceptionType = "System.ApplicationException"
+                            Message       = "Space is missing the Key"
+                            ErrorId       = "AtlassianPS.ConfluencePS.MissingProperty"
+                            Category      = "InvalidData"
+                            Cmdlet        = $PSCmdlet
+                        }
+                        WriteError @writeErrorSplat
+                        continue
+                    }
+
+                    $CQLparameters += "space=$($Space.Key)"
+                }
                 $cqlQuery = ConvertTo-URLEncoded ($CQLparameters -join (" AND "))
 
-                $iwParameters["GetParameters"]["cql"] = $cqlQuery
+                $iwParameters["GetParameter"]["cql"] = $cqlQuery
 
+                Write-DebugMessage "Invoking API Method with `$iwParameters" -BreakPoint
                 Invoke-Method @iwParameters
                 break
             }
             "byQuery" {
+                # Paging
+                ($PSCmdlet.PagingParameters | Get-Member -MemberType Property).Name | ForEach-Object {
+                    $iwParameters[$_] = $PSCmdlet.PagingParameters.$_
+                }
+                $iwParameters["Paging"] = $true
+
                 $iwParameters["Uri"] = $resourceApi -f "/search"
 
-                $cqlQuery = ConvertTo-URLEncoded $Query
-                $iwParameters["GetParameters"]["cql"] = "type=page AND $cqlQuery"
+                $iwParameters["GetParameter"]["cql"] = ConvertTo-URLEncoded "type=page AND ($Query)"
 
+                Write-DebugMessage "Invoking API Method with `$iwParameters" -BreakPoint
                 Invoke-Method @iwParameters
             }
         }
     }
 
-    END {
-        Write-Verbose "[$($MyInvocation.MyCommand.Name)] Function ended"
+    end {
+        Write-Verbose "Function ended"
     }
 }

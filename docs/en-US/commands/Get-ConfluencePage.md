@@ -1,13 +1,14 @@
 ---
 external help file: ConfluencePS-help.xml
-online version: https://atlassianps.org/docs/ConfluencePS/commands/Get-Page/
-Module Name: ConfluencePS
-locale: en-US
-schema: 2.0.0
 layout: documentation
-permalink: /docs/ConfluencePS/commands/Get-Page/
+locale: en-US
+Module Name: ConfluencePS
+online version: https://atlassianps.org/docs/ConfluencePS/commands/Get-ConfluencePage/
+permalink: /docs/ConfluencePS/commands/Get-ConfluencePage/
+schema: 2.0.0
 ---
-# Get-Page
+
+# Get-ConfluencePage
 
 ## SYNOPSIS
 
@@ -18,31 +19,29 @@ Retrieve a listing of pages in your Confluence instance.
 ### byId (Default)
 
 ```powershell
-Get-ConfluencePage -ApiURi <Uri> -Credential <PSCredential> [-PageID] <Int32[]> [-PageSize <Int32>] [-IncludeTotalCount] [-Skip <UInt64>] [-First <UInt64>]
-```
-
-### byLabel
-
-```powershell
-Get-ConfluencePage -ApiURi <Uri> -Credential <PSCredential> [-SpaceKey <String>] [-Space <Space>] -Label <String[]> [-PageSize <Int32>] [-IncludeTotalCount] [-Skip <UInt64>] [-First <UInt64>]
+Get-ConfluencePage -Page <Page[]> [-PageSize <UInt32>] [-ServerName <String>] [-Credential <PSCredential>]
+ [-IncludeTotalCount] [-Skip <UInt64>] [-First <UInt64>] [<CommonParameters>]
 ```
 
 ### bySpace
 
 ```powershell
-Get-ConfluencePage -ApiURi <Uri> -Credential <PSCredential> -SpaceKey <String> [-Title <String>] [-PageSize <Int32>] [-IncludeTotalCount] [-Skip <UInt64>] [-First <UInt64>]
+Get-ConfluencePage [-Title <String>] -Space <Space> [-PageSize <UInt32>] [-ServerName <String>]
+ [-Credential <PSCredential>] [-IncludeTotalCount] [-Skip <UInt64>] [-First <UInt64>] [<CommonParameters>]
+```
+
+### byLabel
+
+```powershell
+Get-ConfluencePage [-Space <Space>] -Label <String[]> [-PageSize <UInt32>] [-ServerName <String>]
+ [-Credential <PSCredential>] [-IncludeTotalCount] [-Skip <UInt64>] [-First <UInt64>] [<CommonParameters>]
 ```
 
 ### byQuery
 
 ```powershell
-Get-ConfluencePage -ApiURi <Uri> -Credential <PSCredential> [-Query <String>] [-PageSize <Int32>] [-IncludeTotalCount] [-Skip <UInt64>] [-First <UInt64>]
-```
-
-### bySpaceObject
-
-```powershell
-Get-ConfluencePage -ApiURi <Uri> -Credential <PSCredential> -Space <Space> [-Title <String>] [-PageSize <Int32>] [-IncludeTotalCount] [-Skip <UInt64>] [-First <UInt64>]
+Get-ConfluencePage [-Query] <String> [-PageSize <UInt32>] [-ServerName <String>] [-Credential <PSCredential>]
+ [-IncludeTotalCount] [-Skip <UInt64>] [-First <UInt64>] [<CommonParameters>]
 ```
 
 ## DESCRIPTION
@@ -51,7 +50,7 @@ Return Confluence pages, filtered by ID, Name, or Space.
 
 ## EXAMPLES
 
-### -------------------------- EXAMPLE 1 --------------------------
+### EXAMPLE 1
 
 ```powershell
 Get-ConfluencePage -SpaceKey HOTH
@@ -61,7 +60,7 @@ Get-ConfluenceSpace -SpaceKey HOTH | Get-ConfluencePage
 Two different methods to return all wiki pages in space "HOTH".
 Both examples should return identical results.
 
-### -------------------------- EXAMPLE 2 --------------------------
+### EXAMPLE 2
 
 ```powershell
 Get-ConfluencePage -PageID 123456 | Format-List *
@@ -70,7 +69,7 @@ Get-ConfluencePage -PageID 123456 | Format-List *
 Returns the wiki page with ID 123456.
 `Format-List *` displays all of the object's properties, including the full page body.
 
-### -------------------------- EXAMPLE 3 --------------------------
+### EXAMPLE 3
 
 ```powershell
 Get-ConfluencePage -Title 'luke*' -SpaceKey HOTH
@@ -79,7 +78,7 @@ Get-ConfluencePage -Title 'luke*' -SpaceKey HOTH
 Return all pages in HOTH whose names start with "luke" (case-insensitive).
 Wildcards (*) can be inserted to support partial matching.
 
-### -------------------------- EXAMPLE 4 --------------------------
+### EXAMPLE 4
 
 ```powershell
 Get-ConfluencePage -Label 'skywalker'
@@ -88,7 +87,7 @@ Get-ConfluencePage -Label 'skywalker'
 Return all pages containing the label "skywalker" (case-insensitive).
 Label text must match exactly; no wildcards are applied.
 
-### -------------------------- EXAMPLE 5 --------------------------
+### EXAMPLE 5
 
 ```powershell
 Get-ConfluencePage -Query "mention = jSmith and creator != jSmith"
@@ -98,55 +97,19 @@ Return all pages matching the query.
 
 ## PARAMETERS
 
-### -ApiURi
+### -Page
 
-The URi of the API interface.
-Value can be set persistently with Set-ConfluenceInfo.
-
-```yaml
-Type: Uri
-Parameter Sets: (All)
-Aliases:
-
-Required: True
-Position: Named
-Default value: None
-Accept pipeline input: False
-Accept wildcard characters: False
-```
-
-### -Credential
-
-Confluence's credentials for authentication.
-Value can be set persistently with Set-ConfluenceInfo.
+{{Fill Page Description}}
 
 ```yaml
-Type: PSCredential
-Parameter Sets: (All)
-Aliases:
-
-Required: True
-Position: Named
-Default value: None
-Accept pipeline input: False
-Accept wildcard characters: False
-```
-
-### -PageID
-
-Filter results by page ID.
-
-Best option if you already know the ID.
-
-```yaml
-Type: Int32[]
+Type: Page[]
 Parameter Sets: byId
 Aliases: ID
 
 Required: True
-Position: 1
+Position: Named
 Default value: None
-Accept pipeline input: True (ByPropertyName, ByValue)
+Accept pipeline input: True (ByValue)
 Accept wildcard characters: False
 ```
 
@@ -158,7 +121,7 @@ This supports wildcards (*) to allow for partial matching.
 
 ```yaml
 Type: String
-Parameter Sets: bySpace, bySpaceObject
+Parameter Sets: bySpace
 Aliases: Name
 
 Required: False
@@ -168,24 +131,12 @@ Accept pipeline input: False
 Accept wildcard characters: True
 ```
 
-### -SpaceKey
+### -Space
 
-Filter results by space key (case-insensitive).
-
-```yaml
-Type: String
-Parameter Sets: bySpaceObject, byLabel
-Aliases: Key
-
-Required: True
-Position: Named
-Default value: None
-Accept pipeline input: False
-Accept wildcard characters: False
-```
+Filter results by space object(s), typically from the pipeline.
 
 ```yaml
-Type: String
+Type: Space
 Parameter Sets: bySpace
 Aliases: Key
 
@@ -196,31 +147,15 @@ Accept pipeline input: False
 Accept wildcard characters: False
 ```
 
-### -Space
-
-Filter results by space object(s), typically from the pipeline.
-
 ```yaml
 Type: Space
-Parameter Sets: bySpaceObject, byLabel
-Aliases:
+Parameter Sets: byLabel
+Aliases: Key
 
-Required: True
+Required: False
 Position: Named
 Default value: None
-Accept pipeline input: True (ByValue)
-Accept wildcard characters: False
-```
-
-```yaml
-Type: Space
-Parameter Sets: bySpaceObject
-Aliases:
-
-Required: True
-Position: Named
-Default value: None
-Accept pipeline input: True (ByPropertyName, ByValue)
+Accept pipeline input: False
 Accept wildcard characters: False
 ```
 
@@ -267,7 +202,7 @@ This setting can be tuned to get better performance according to the load on the
 > Warning: too high of a PageSize can cause a timeout on the request.
 
 ```yaml
-Type: Int32
+Type: UInt32
 Parameter Sets: (All)
 Aliases:
 
@@ -333,6 +268,42 @@ Default value: 18446744073709551615
 Accept pipeline input: False
 Accept wildcard characters: False
 ```
+
+### -ServerName
+
+{{Fill ServerName Description}}
+
+```yaml
+Type: String
+Parameter Sets: (All)
+Aliases:
+
+Required: False
+Position: Named
+Default value: None
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -Credential
+
+Confluence's credentials for authentication.
+Value can be set persistently with Set-ConfluenceInfo.
+
+```yaml
+Type: PSCredential
+Parameter Sets: (All)
+Aliases:
+
+Required: False
+Position: Named
+Default value: None
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### CommonParameters
+This cmdlet supports the common parameters: -Debug, -ErrorAction, -ErrorVariable, -InformationAction, -InformationVariable, -OutVariable, -OutBuffer, -PipelineVariable, -Verbose, -WarningAction, and -WarningVariable. For more information, see about_CommonParameters (http://go.microsoft.com/fwlink/?LinkID=113216).
 
 ## INPUTS
 

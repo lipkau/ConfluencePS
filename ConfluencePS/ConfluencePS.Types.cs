@@ -140,8 +140,17 @@ namespace AtlassianPS
 
         public class Page
         {
-            // TODO
-            // public Page() {}
+            public Page(String _ID)
+            {
+                ID = Convert.ToUInt32(_ID);
+            }
+
+            public Page(UInt32 _ID)
+            {
+                ID = _ID;
+            }
+
+            public Page() {}
 
             public UInt32 ID { get; set; }
             public ContentStatus Status { get; set; }
