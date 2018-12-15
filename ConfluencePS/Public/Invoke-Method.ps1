@@ -246,7 +246,7 @@ function Invoke-Method {
         #region Execute the actual query
         try {
             Write-Verbose "$($splatParameters.Method) $($splatParameters.Uri)"
-            Write-Debug "Invoke-WebRequest with `$splatParameters: $($splatParameters | Out-String)"
+            Write-DebugMessage "Invoke-WebRequest with `$splatParameters: $($splatParameters | Out-String)"
             # Invoke the API
             $webResponse = Invoke-WebRequest @splatParameters
         }
@@ -257,7 +257,7 @@ function Invoke-Method {
             $webResponse = $exception.Exception.Response
         }
 
-        Write-Debug "Executed WebRequest. Access `$webResponse to see details"
+        Write-DebugMessage "Executed WebRequest. Access `$webResponse to see details" -BreakPoint
         Test-ServerResponse -InputObject $webResponse -Cmdlet $Cmdlet
         #endregion Execute the actual query
     }
@@ -346,7 +346,7 @@ function Invoke-Method {
                         }
                     }
                     else {
-                        $caller = (Get-PSCallstack | Select -First 2)[-1].Command
+                        $caller = (Get-PSCallstack | Select-Object -First 2)[-1].Command
                         if ($PSCmdlet.MyInvocation.MyCommand.Name -eq $caller) {
                             $response
                         }

@@ -54,24 +54,24 @@ function Write-DebugMessage {
     )
 
     begin {
+        $oldDebugPreference = $DebugPreference
+
         $indent, $functionName, $timeStamp = ""
 
         Import-MqcnAlias -Alias "WriteDebug" -Command "Microsoft.PowerShell.Utility\Write-Debug"
 
         $messageSettings = Get-AtlassianConfiguration -Name Message -ValueOnly 4>$null 5>$null
-
-        if (-not $BreakPoint) {
-            $oldDebugPreference = $DebugPreference
-            if (-not ($DebugPreference -eq "SilentlyContinue")) {
-                $DebugPreference = 'Continue'
-            }
-        }
     }
 
     process {
 
         if ((Get-PSCallstack | Select-Object -Last 1 -Skip 1).Arguments.Contains("Debug")) {
             $DebugPreference = 'Continue'
+        }
+        if ($BreakPoint) {
+            if ($DebugPreference -eq "Continue") {
+                $DebugPreference = "Inquire"
+            }
         }
 
         if ($messageSettings.Breadcrumbs) {
