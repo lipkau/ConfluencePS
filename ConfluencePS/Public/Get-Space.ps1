@@ -5,13 +5,14 @@ function Get-Space {
     param(
         [Parameter( ValueFromPipeline )]
         [Alias('Key')]
-        [String[]]
-        $SpaceKey,
+        [AtlassianPS.ConfluencePS.Space[]]
+        $Space,
 
         [UInt32]
         $PageSize = (Get-AtlassianConfiguration -Name "ConfluencePS" -ValueOnly)["PageSize"],
 
         [Parameter()]
+        [ValidateNotNullOrEmpty()]
         [ArgumentCompleter(
             {
                 param($commandName, $parameterName, $wordToComplete, $commandAst, $fakeBoundParameter)
@@ -49,10 +50,9 @@ function Get-Space {
                 expand = "description.plain,icon,homepage,metadata.labels"
                 limit  = $PageSize
             }
-            Paging       = $true
             OutputType   = [AtlassianPS.ConfluencePS.Space]
             Credential   = $Credential
-            Verbose    = $false
+            Verbose      = $false
         }
 
         # Paging
@@ -60,16 +60,30 @@ function Get-Space {
             $iwParameters[$_] = $PSCmdlet.PagingParameters.$_
         }
 
-        if ($SpaceKey) {
-            foreach ($_space in $SpaceKey) {
-                $iwParameters["Uri"] = $resourceURi -f "/$_space"
+        if ($Space) {
+            foreach ($_space in $Space) {
+                if ( -not (Get-Member -InputObject $_space -Name Key) -or -not ($_space.Key)) {
+                    $writeErrorSplat = @{
+                        ExceptionType = "System.ApplicationException"
+                        Message       = "Space is missing the Key"
+                        ErrorId       = "AtlassianPS.ConfluencePS.MissingProperty"
+                        Category      = "InvalidData"
+                        Cmdlet        = $PSCmdlet
+                    }
+                    WriteError @writeErrorSplat
+                }
 
+                $iwParameters["Uri"] = $resourceURi -f "/$($_space.Key)"
+
+                Write-DebugMessage "Invoking API Method with `$iwParameters" -BreakPoint
                 Invoke-Method @iwParameters
             }
         }
         else {
             $iwParameters["Uri"] = $resourceURi -f ""
+            $iwParameters["Paging"] = $true
 
+            Write-DebugMessage "Invoking API Method with `$iwParameters" -BreakPoint
             Invoke-Method @iwParameters
         }
     }

@@ -110,11 +110,18 @@ namespace AtlassianPS
 
         public class Space
         {
+            public Space(String _Key)
+            {
+                Key = _Key;
+            }
+
             public Space(String _Key, String _Name = "")
             {
                 Key = _Key;
                 Name = _Name;
             }
+
+            public Space() {}
 
             public UInt32 Id { get; set; }
             public String Key { get; set; }
