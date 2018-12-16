@@ -33,6 +33,11 @@ Describe 'ConvertTo-Table' -Tag Unit {
         Remove-Item -Path Env:\BH*
     }
 
+    #region Mocking
+    Mock Write-DebugMessage -ModuleName $env:BHProjectName {}
+    Mock Write-Verbose -ModuleName $env:BHProjectName {}
+    #endregion Mocking
+
     Context "Sanity checking" {
         $command = Get-Command -Name ConvertTo-ConfluenceTable
 
@@ -53,7 +58,7 @@ Describe 'ConvertTo-Table' -Tag Unit {
     Context "Behavior checking" {
 
         #region Mocking
-        # linux and macOS don't have Fake
+        # linux and macOS don't have Get-Service
         function Get-FakeService {
             [PSCustomObject]@{
                 Name = "AppMgmt"

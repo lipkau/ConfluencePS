@@ -204,6 +204,8 @@ For more information, see about_CommonParameters
 
 ## INPUTS
 
+### ConfluencePS.Space
+
 ## OUTPUTS
 
 ### ConfluencePS.Space
@@ -214,4 +216,8 @@ Piped output into other cmdlets is generally tested and supported.
 
 ## RELATED LINKS
 
-[https://github.com/AtlassianPS/ConfluencePS](https://github.com/AtlassianPS/ConfluencePS)
+[New-ConfluenceSpace](../New-ConfluenceSpace)
+
+[Set-ConfluenceSpace](../Set-ConfluenceSpace)
+
+[Rename-ConfluenceSpace](../Rename-ConfluenceSpace)

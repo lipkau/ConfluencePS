@@ -127,3 +127,11 @@ For more information, see about_CommonParameters
 ## NOTES
 
 ## RELATED LINKS
+
+[Connect-ConfluenceServer](../Connect-ConfluenceServer)
+
+[about_ConfluencePS_Authentication](../../about/authentication.html)
+
+[about_AtlassianPS.Configuration](../../../about_AtlassianPS.Configuration)
+
+[AtlassianPS.Configuration\Add-AtlassianServerConfiguration](../../../AtlassianPS.Configuration/commands/Add-ServerConfiguration)

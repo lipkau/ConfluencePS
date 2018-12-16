@@ -303,7 +303,13 @@ Accept wildcard characters: False
 ```
 
 ### CommonParameters
-This cmdlet supports the common parameters: -Debug, -ErrorAction, -ErrorVariable, -InformationAction, -InformationVariable, -OutVariable, -OutBuffer, -PipelineVariable, -Verbose, -WarningAction, and -WarningVariable. For more information, see about_CommonParameters (http://go.microsoft.com/fwlink/?LinkID=113216).
+
+This cmdlet supports the common parameters: `-Debug`, `-ErrorAction`,
+`-ErrorVariable`, `-InformationAction`, `-InformationVariable`, `-OutVariable`,
+`-OutBuffer`, `-PipelineVariable`, `-Verbose`, `-WarningAction`, and
+`-WarningVariable`.
+For more information, see about_CommonParameters
+(<http://go.microsoft.com/fwlink/?LinkID=113216>).
 
 ## INPUTS
 
@@ -313,8 +319,10 @@ This cmdlet supports the common parameters: -Debug, -ErrorAction, -ErrorVariable
 
 ## NOTES
 
-Piped output into other cmdlets is generally tested and supported.
-
 ## RELATED LINKS
 
-[https://github.com/AtlassianPS/ConfluencePS](https://github.com/AtlassianPS/ConfluencePS)
+[New-ConfluencePage](../New-ConfluencePage)
+
+[Set-ConfluencePage](../Set-ConfluencePage)
+
+[Rename-ConfluencePage](../Rename-ConfluencePage)
