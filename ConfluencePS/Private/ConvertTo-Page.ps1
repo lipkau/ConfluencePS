@@ -25,14 +25,14 @@ function ConvertTo-Page {
                             if ($_.space) {
                                 ConvertTo-Space $_.space
                             }
-                            else {$null}
+                            else { $null }
                         }
                     },
                     @{Name = "version"; Expression = {
                             if ($_.version) {
                                 ConvertTo-Version $_.version
                             }
-                            else {$null}
+                            else { $null }
                         }
                     },
                     @{Name = "body"; Expression = {$_.body.storage.value}},
@@ -40,7 +40,7 @@ function ConvertTo-Page {
                             if ($_.ancestors) {
                                 ConvertTo-PageAncestor $_.ancestors
                             }
-                            else {$null}
+                            else { $null }
                         }
                     },
                     @{Name = "URL"; Expression = {
@@ -49,7 +49,7 @@ function ConvertTo-Page {
                             if ($_._links.webui) {
                                 "{0}{1}" -f $base, $_._links.webui
                             }
-                            else {$null}
+                            else { $null }
                         }
                     },
                     @{Name = "ShortURL"; Expression = {
@@ -58,7 +58,7 @@ function ConvertTo-Page {
                             if ($_._links.tinyui) {
                                 "{0}{1}" -f $base, $_._links.tinyui
                             }
-                            else {$null}
+                            else { $null }
                         }
                     },
                     @{Name = "Self"; Expression = {$_._links.self}}

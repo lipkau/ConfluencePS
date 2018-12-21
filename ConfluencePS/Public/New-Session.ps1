@@ -1,6 +1,7 @@
 function New-Session {
     # .ExternalHelp ..\ConfluencePS-help.xml
     [CmdletBinding()]
+    [OutputType( [Void] )]
     [System.Diagnostics.CodeAnalysis.SuppressMessage('PSUseShouldProcessForStateChangingFunctions', '')]
     param(
         [Parameter( Mandatory )]

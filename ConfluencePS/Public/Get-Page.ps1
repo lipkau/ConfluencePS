@@ -1,7 +1,7 @@
 function Get-Page {
     # .ExternalHelp ..\ConfluencePS-help.xml
     [CmdletBinding( SupportsPaging, DefaultParameterSetName = "byId" )]
-    [OutputType([AtlassianPS.ConfluencePS.Page])]
+    [OutputType( [AtlassianPS.ConfluencePS.Page] )]
     param(
         [Parameter( Position = 0, Mandatory, ValueFromPipeline, ParameterSetName = "byId" )]
         [Alias('ID')]

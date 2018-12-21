@@ -1,7 +1,7 @@
 function Get-Space {
     # .ExternalHelp ..\ConfluencePS-help.xml
     [CmdletBinding( SupportsPaging )]
-    [OutputType([AtlassianPS.ConfluencePS.Space])]
+    [OutputType( [AtlassianPS.ConfluencePS.Space] )]
     param(
         [Parameter( ValueFromPipeline )]
         [Alias('Key')]
