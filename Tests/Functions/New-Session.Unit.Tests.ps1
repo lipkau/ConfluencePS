@@ -43,7 +43,11 @@ Describe "New-Session" -Tag Unit {
     Mock Write-DebugMessage -ModuleName $env:BHProjectName {}
     Mock Write-Verbose -ModuleName $env:BHProjectName {}
 
-    Mock Invoke-Method -ModuleName $env:BHProjectName {}
+    Mock Invoke-Method -ModuleName $env:BHProjectName -ParameterFilter {
+        $Uri -eq "/rest/api/space" -and
+        $Method -eq "GET"
+    } { }
+    Mock Invoke-Method -ModuleName $env:BHProjectName { throw "Invalid call to Invoke-Method" }
     #endregion Mocking
 
     Context "Sanity checking" {
