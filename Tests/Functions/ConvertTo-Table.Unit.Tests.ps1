@@ -45,10 +45,12 @@ Describe 'ConvertTo-Table' -Tag Unit {
             $command.Parameters.ContainsKey("Content")
             $command.Parameters["Content"].ParameterType | Should -Be "System.Object"
         }
+
         It "has a [Switch] -Vertical parameter" {
             $command.Parameters.ContainsKey("Vertical")
             $command.Parameters["Vertical"].ParameterType | Should -Be "Switch"
         }
+
         It "has a [Switch] -NoHeader parameter" {
             $command.Parameters.ContainsKey("NoHeader")
             $command.Parameters["NoHeader"].ParameterType | Should -Be "Switch"

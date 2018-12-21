@@ -1,38 +1,38 @@
 function ConvertTo-Table {
     [CmdletBinding()]
+    [OutputType( [String] )]
     [System.Diagnostics.CodeAnalysis.SuppressMessage('PSUseDeclaredVarsMoreThanAssignments', '')]
     param (
-        [Parameter(
-            Mandatory = $true,
-            ValueFromPipeline = $true
-        )]
+        [Parameter( Mandatory, ValueFromPipeline )]
         $Content,
 
-        [Switch]$Vertical,
+        [Switch]
+        $Vertical,
 
-        [Switch]$NoHeader
+        [Switch]
+        $NoHeader
     )
 
-    BEGIN {
-        Write-Verbose "[$($MyInvocation.MyCommand.Name)] Function started"
+    begin {
+        Write-Verbose "Function started"
 
         $sb = [System.Text.StringBuilder]::new()
     }
 
-    PROCESS {
-        Write-Debug "[$($MyInvocation.MyCommand.Name)] ParameterSetName: $($PsCmdlet.ParameterSetName)"
-        Write-Debug "[$($MyInvocation.MyCommand.Name)] PSBoundParameters: $($PSBoundParameters | Out-String)"
+    process {
+        Write-DebugMessage "ParameterSetName: $($PsCmdlet.ParameterSetName)"
+        Write-DebugMessage "PSBoundParameters: $($PSBoundParameters | Out-String)"
 
         $HeaderGenerated = $NoHeader
 
         # This ForEach needed if the content wasn't piped in
         $Content | ForEach-Object {
-            If ($Vertical) {
-                If ($HeaderGenerated) {$pipe = '|'}
-                Else {$pipe = '||'}
+            if ($Vertical) {
+                if ($HeaderGenerated) {$pipe = '|'}
+                else {$pipe = '||'}
 
                 # Put an empty row between multiple tables (objects)
-                If ($Spacer) {
+                if ($Spacer) {
                     $null = $sb.AppendLine('')
                 }
 
@@ -42,9 +42,9 @@ function ConvertTo-Table {
                 }
 
                 $Spacer = $true
-            } Else {
+            } else {
                 # Header row enclosed by ||
-                If (-not $HeaderGenerated) {
+                if (-not $HeaderGenerated) {
                     $null = $sb.AppendLine("|| {0} ||" -f ($_.PSObject.Properties.Name -join " || "))
                     $HeaderGenerated = $true
                 }
@@ -56,10 +56,10 @@ function ConvertTo-Table {
         }
     }
 
-    END {
+    end {
         # Return the array as one large, multi-line string
         $sb.ToString()
 
-        Write-Verbose "[$($MyInvocation.MyCommand.Name)] Function ended"
+        Write-Verbose "Function ended"
     }
 }
