@@ -120,7 +120,7 @@ function Invoke-Method {
             )
 
             process {
-                foreach ($container in $script:PagingContainers) {
+                foreach ($container in $script:moduleSettings["PagingContainers"]) {
                     if (($InputObject) -and ($InputObject | Get-Member -Name $container)) {
                         Write-DebugMessage "Extracting data from [$container] containter"
                         $InputObject.$container
@@ -144,17 +144,19 @@ function Invoke-Method {
                 Message       = "Missing Server"
                 ErrorId       = "AtlassianPS.ConfluencePS.MissingServer"
                 Category      = "InvalidData"
-                Cmdlet = $Cmdlet
+                Cmdlet        = $Cmdlet
             }
             ThrowError @throwErrorSplat
         }
 
-        [Uri]$Uri = "{0}{1}" -f $server.Uri, $Uri
+        if ( -not ([Uri]$Uri).AbsolutePath) {
+            [Uri]$Uri = "{0}{1}" -f $server.Uri, $Uri
 
-        # Sanitize double slash `//`
-        # Happens when the BaseUri is the domain name
-        # [Uri]"http://google.com" vs [Uri]"http://google.com/foo"
-        $URi = $URi -replace '(?<!:)\/\/', '/'
+            # Sanitize double slash `//`
+            # Happens when the BaseUri is the domain name
+            # [Uri]"http://google.com" vs [Uri]"http://google.com/foo"
+            $URi = $URi -replace '(?<!:)\/\/', '/'
+        }
 
         # load DefaultParameters for Invoke-WebRequest
         # as the global PSDefaultParameterValues is not used
@@ -165,7 +167,7 @@ function Invoke-Method {
         # - Headers passes as parameters
         # - User's Headers in $PSDefaultParameterValues
         # - Module's default Headers
-        $_headers = Join-Hashtable -Hashtable $script:DefaultHeaders, $PSDefaultParameterValues["Invoke-WebRequest:Headers"], $Headers
+        $_headers = Join-Hashtable -Hashtable $script:moduleSettings["Headers"], $PSDefaultParameterValues["Invoke-WebRequest:Headers"], $Headers
         #endregion Headers
 
         #region Manage URI
@@ -198,7 +200,7 @@ function Invoke-Method {
             Uri             = $PaginatedUri
             Method          = $Method
             Headers         = $_headers
-            ContentType     = $script:DefaultContentType
+            ContentType     = $script:moduleSettings["PageSize"]
             UseBasicParsing = $true
             Credential      = $Credential
             ErrorAction     = "Stop"

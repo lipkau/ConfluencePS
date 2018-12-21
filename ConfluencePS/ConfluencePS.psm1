@@ -14,22 +14,6 @@ if (!("System.Web.HttpUtility" -as [Type])) {
 }
 #endregion Dependencies
 
-#region Configuration
-$script:PagingContainers = @("results")
-$moduleSettings = Get-AtlassianConfiguration -Name ConfluencePS -ValueOnly
-if ($moduleSettings) {
-    if (-not $moduleSettings["PageSize"]) { $moduleSettings["PageSize"] = 25 }
-    if (-not $moduleSettings["ContentType"]) { $moduleSettings["ContentType"] = "application/json; charset=utf-8" }
-}
-else {
-    $moduleSettings = @{
-        PageSize    = 25
-        ContentType = "application/json; charset=utf-8"
-    }
-}
-Set-AtlassianConfiguration -Name ConfluencePS -Value $moduleSettings
-#endregion Configuration
-
 #region LoadFunctions
 $publicFunctions = @( Get-ChildItem -Path $PSScriptRoot\Public\*.ps1 -ErrorAction SilentlyContinue )
 $privateFunctions = @( Get-ChildItem -Path $PSScriptRoot\Private\*.ps1 -ErrorAction SilentlyContinue )
@@ -53,3 +37,15 @@ foreach ($file in @($PublicFunctions + $PrivateFunctions)) {
 }
 Export-ModuleMember -Function $PublicFunctions.BaseName -Alias *
 #endregion LoadFunctions
+
+#region Configuration
+$script:moduleSettings = Join-Hashtable -Hashtable @{
+    PageSize = 25
+    Headers  = @{
+        "Content-Type" = "application/json; charset=utf-8"
+    }
+    PagingContainers = @("results")
+}, (Get-AtlassianConfiguration -Name ConfluencePS -ValueOnly)
+
+Set-AtlassianConfiguration -Name ConfluencePS -Value $script:moduleSettings
+#endregion Configuration
