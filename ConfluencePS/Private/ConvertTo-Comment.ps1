@@ -52,7 +52,7 @@ function ConvertTo-Comment {
                     },
                     @{Name = "inlineProperties"; Expression = {
                             if ($_.extensions -and $_.extensions.inlineProperties) {
-                                ConvertTo-CommentInlineProperties $_.extensions.inlineProperties
+                                ConvertTo-CommentInlineProperty $_.extensions.inlineProperties
                             }
                             else {$null}
                         }
