@@ -7,7 +7,6 @@ online version: https://atlassianps.org/docs/ConfluencePS/commands/Get-Confluenc
 permalink: /docs/ConfluencePS/commands/Get-ConfluenceSpace/
 schema: 2.0.0
 ---
-
 # Get-ConfluenceSpace
 
 ## SYNOPSIS
@@ -112,8 +111,8 @@ Type: String
 Parameter Sets: (All)
 Aliases:
 
-Required: True
-Position: 0
+Required: False
+Position: Named
 Default value: None
 Accept pipeline input: True (ByValue)
 Accept wildcard characters: False
@@ -131,7 +130,7 @@ Parameter Sets: (All)
 Aliases:
 
 Required: False
-Position: 1
+Position: Named
 Default value: None
 Accept pipeline input: False
 Accept wildcard characters: False

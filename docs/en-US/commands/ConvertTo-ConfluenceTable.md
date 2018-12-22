@@ -7,7 +7,6 @@ online version: https://atlassianps.org/docs/ConfluencePS/commands/ConvertTo-Con
 permalink: /docs/ConfluencePS/commands/ConvertTo-ConfluenceTable/
 schema: 2.0.0
 ---
-
 # ConvertTo-ConfluenceTable
 
 ## SYNOPSIS

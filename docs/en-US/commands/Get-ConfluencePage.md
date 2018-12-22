@@ -7,7 +7,6 @@ online version: https://atlassianps.org/docs/ConfluencePS/commands/Get-Confluenc
 permalink: /docs/ConfluencePS/commands/Get-ConfluencePage/
 schema: 2.0.0
 ---
-
 # Get-ConfluencePage
 
 ## SYNOPSIS
@@ -215,7 +214,7 @@ Accept wildcard characters: False
 
 ### -IncludeTotalCount
 
->NOTE: Not yet implemented.
+> NOTE: Not yet implemented.
 
 Causes an extra output of the total count at the beginning.
 
@@ -271,7 +270,11 @@ Accept wildcard characters: False
 
 ### -ServerName
 
-{{Fill ServerName Description}}
+Name of the server registered in AtlassianPS.Configuration.
+
+This parameter supports tab-completion.
+
+> More information on how to authenticate in [about_ConfluencePS_Authentication](../../about/authentication.html)
 
 ```yaml
 Type: String
@@ -281,14 +284,15 @@ Aliases:
 Required: False
 Position: Named
 Default value: None
-Accept pipeline input: False
+Accept pipeline input: True (ByValue)
 Accept wildcard characters: False
 ```
 
 ### -Credential
 
 Confluence's credentials for authentication.
-Value can be set persistently with Set-ConfluenceInfo.
+
+> More information on how to authenticate in [about_ConfluencePS_Authentication](../../about/authentication.html)
 
 ```yaml
 Type: PSCredential

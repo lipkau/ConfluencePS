@@ -7,7 +7,6 @@ online version: https://atlassianps.org/docs/ConfluencePS/commands/Connect-Confl
 permalink: /docs/ConfluencePS/commands/Connect-ConfluenceServer/
 schema: 2.0.0
 ---
-
 # Connect-ConfluenceServer
 
 ## SYNOPSIS
