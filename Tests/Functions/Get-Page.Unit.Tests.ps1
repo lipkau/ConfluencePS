@@ -141,7 +141,7 @@ Describe "Get-Page" -Tag Unit {
         }
 
         It "fetches pages by Title" {
-            (Get-ConfluencePage -Space "Foo" -Title "Bar").Count | Should -Be 1
+            @(Get-ConfluencePage -Space "Foo" -Title "Bar").Count | Should -Be 1
 
             $assertMockCalledSplat = @{
                 CommandName     = "Invoke-Method"

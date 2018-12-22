@@ -138,21 +138,32 @@ namespace AtlassianPS
             }
         }
 
-        public class Page
+        public class Content
         {
-            public Page(String _ID)
+            public Content(String _ID)
             {
                 ID = Convert.ToUInt32(_ID);
             }
 
-            public Page(UInt32 _ID)
+            public Content(UInt32 _ID)
             {
                 ID = _ID;
             }
 
-            public Page() {}
+            public Content() {}
 
             public UInt32 ID { get; set; }
+            public Label[] Labels { get; set; }
+            public Uri URL { get; set; }
+            public Uri Self { get; set; }
+        }
+
+        public class Page : Content
+        {
+            public Page(String ID) : base(ID) {}
+            public Page(UInt32 ID) : base(ID) {}
+            public Page() : base() {}
+
             public ContentStatus Status { get; set; }
             public String Title { get; set; }
             public Space Space { get; set; }
@@ -160,10 +171,7 @@ namespace AtlassianPS
             public Version Version { get; set; }
             public String Body { get; set; }
             public Page[] Ancestors { get; set; }
-            public Label[] Labels { get; set; }
-            public Uri URL { get; set; }
             public Uri ShortURL { get; set; }
-            public Uri Self { get; set; }
 
             public override string ToString()
             {
@@ -178,10 +186,10 @@ namespace AtlassianPS
             public String Title { get; set; }
             public String Filename { get; set; }
             public String MediaType { get; set; }
-            public UInt32 FileSize { get; set; }
+            public UInt64 Size { get; set; }
             public String Comment { get; set; }
             public String SpaceKey { get; set; }
-            public UInt32 PageID { get; set; }
+            public UInt32 ContentID { get; set; }
             public Version Version { get; set; }
             public Label[] Labels { get; set; }
             public Uri URL { get; set; }
