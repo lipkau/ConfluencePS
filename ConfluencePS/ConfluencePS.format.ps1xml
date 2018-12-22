@@ -178,5 +178,88 @@
                 </TableRowEntries>
             </TableControl>
         </View>
+        <View>
+            <Name>DefaultView</Name>
+            <ViewSelectedBy>
+                <TypeName>AtlassianPS.ConfluencePS.Attachment</TypeName>
+            </ViewSelectedBy>
+            <TableControl>
+                <TableHeaders>
+                    <TableColumnHeader>
+                        <Label>ID</Label>
+                        <Width>10</Width>
+                        <Alignment>left</Alignment>
+                    </TableColumnHeader>
+                    <TableColumnHeader>
+                        <Label>Title</Label>
+                        <Width>26</Width>
+                        <Alignment>left</Alignment>
+                    </TableColumnHeader>
+                    <TableColumnHeader>
+                        <Label>ContentID</Label>
+                        <Width>10</Width>
+                        <Alignment>right</Alignment>
+                    </TableColumnHeader>
+                    <TableColumnHeader>
+                        <Label>MediaType</Label>
+                        <Width>24</Width>
+                        <Alignment>left</Alignment>
+                    </TableColumnHeader>
+                    <TableColumnHeader>
+                        <Label>Size</Label>
+                        <Width>10</Width>
+                        <Alignment>right</Alignment>
+                    </TableColumnHeader>
+                </TableHeaders>
+                <TableRowEntries>
+                    <TableRowEntry>
+                        <TableColumnItems>
+                            <TableColumnItem>
+                                <PropertyName>ID</PropertyName>
+                            </TableColumnItem>
+                            <TableColumnItem>
+                                <PropertyName>Title</PropertyName>
+                            </TableColumnItem>
+                            <TableColumnItem>
+                                <PropertyName>ContentID</PropertyName>
+                            </TableColumnItem>
+                            <TableColumnItem>
+                                <PropertyName>MediaType</PropertyName>
+                            </TableColumnItem>
+                            <TableColumnItem>
+                                <ScriptBlock>
+                                    switch ($_.Size) {
+                                        { $_ -gt 1PB } {
+                                            "$([math]::Round(($_ / 1PB),2))PB"
+                                            break
+                                        }
+                                        { $_ -gt 1TB } {
+                                            "$([math]::Round(($_ / 1TB),2))TB"
+                                            break
+                                        }
+                                        { $_ -gt 1GB } {
+                                            "$([math]::Round(($_ / 1GB),2))GB"
+                                            break
+                                        }
+                                        { $_ -gt 1MB } {
+                                            "$([math]::Round(($_ / 1MB),2))MB"
+                                            break
+                                        }
+                                        { $_ -gt 1KB } {
+                                            "$([math]::Round(($_ / 1KB),2))KB"
+                                            break
+                                        }
+                                        default {
+                                            "$([math]::Round($_,2))Bytes"
+                                            break
+                                        }
+                                    }
+                                </ScriptBlock>
+                            </TableColumnItem>
+                        </TableColumnItems>
+                    </TableRowEntry>
+                </TableRowEntries>
+            </TableControl>
+        </View>
     </ViewDefinitions>
 </Configuration>
