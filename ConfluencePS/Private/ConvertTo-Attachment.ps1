@@ -17,11 +17,11 @@ function ConvertTo-Attachment {
             Write-Verbose "Converting Object to Attachment"
 
             if($_.container.id) {
-                $pageId = $_.container.id
+                $contentID = $_.container.id
             }
             else {
-                $pageID = $_._expandable.container -replace '^.*\/content\/', ''
-                $pageID = [Convert]::ToInt32($pageID, 10)
+                $contentID = $_._expandable.container -replace '^.*\/content\/', ''
+                $contentID = [Convert]::ToInt32($contentID, 10)
             }
 
             [AtlassianPS.ConfluencePS.Attachment](ConvertTo-Hashtable -InputObject ($object | Select-Object `
@@ -33,15 +33,15 @@ function ConvertTo-Attachment {
                     status,
                     title,
                     @{Name = "filename";  Expression = {
-                            '{0}_{1}' -f $pageID,  $_.title | Remove-InvalidFileCharacter
+                            '{0}_{1}' -f $contentID,  $_.title | Remove-InvalidFileCharacter
                         }
                     },
                     @{Name = "mediatype";  Expression = {
                             $_.extensions.mediaType
                         }
                     },
-                    @{Name = "filesize";  Expression = {
-                            [convert]::ToInt32($_.extensions.fileSize, 10)
+                    @{Name = "size";  Expression = {
+                            [convert]::ToInt32($_.extensions.filesize, 10)
                         }
                     },
                     @{Name = "comment";  Expression = {
@@ -52,8 +52,8 @@ function ConvertTo-Attachment {
                             $_._expandable.space -replace '^.*\/space\/', ''
                         }
                     },
-                    @{Name = "pageid"; Expression = {
-                            $pageID
+                    @{Name = "contentid"; Expression = {
+                            $contentID
                         }
                     },
                     @{Name = "version"; Expression = {
