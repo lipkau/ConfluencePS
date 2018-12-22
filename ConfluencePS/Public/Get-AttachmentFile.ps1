@@ -1,19 +1,10 @@
 function Get-AttachmentFile {
+    # .ExternalHelp ..\ConfluencePS-help.xml
     [CmdletBinding()]
-    [OutputType([Bool])]
+    [OutputType( [Bool] )]
     param (
-        [Parameter( Mandatory = $true )]
-        [URi]$apiURi,
-
-        [Parameter( Mandatory = $true )]
-        [PSCredential]$Credential,
-
-        [Parameter(
-            Position = 0,
-            Mandatory = $true,
-            ValueFromPipeline = $true
-        )]
-        [ConfluencePS.Attachment[]]$Attachment,
+        [Parameter( Mandatory, ValueFromPipeline )]
+        [AtlassianPS.ConfluencePS.Attachment[]]$Attachment,
 
         [ValidateScript(
             {
@@ -32,45 +23,95 @@ function Get-AttachmentFile {
                 }
             }
         )]
-        [String]$Path
+        [String]$Path,
+
+        [Parameter()]
+        [ValidateNotNullOrEmpty()]
+        [ArgumentCompleter(
+            {
+                param($commandName, $parameterName, $wordToComplete, $commandAst, $fakeBoundParameter)
+                $command = Get-Command "Get-*ServerConfiguration" -Module AtlassianPS.Configuration
+                & $command.Name |
+                    Where-Object { $_.Type -eq [AtlassianPS.ServerType]"Confluence" } |
+                    Where-Object { $_.Name -like "$wordToComplete*" } |
+                    ForEach-Object { [System.Management.Automation.CompletionResult]::new( $_.Name, $_.Name, [System.Management.Automation.CompletionResultType]::ParameterValue, $_.Name ) }
+            }
+        )]
+        [String]
+        $ServerName = (Get-DefaultServer),
+
+        [Parameter()]
+        [System.Management.Automation.PSCredential]
+        [System.Management.Automation.Credential()]
+        $Credential = [System.Management.Automation.PSCredential]::Empty
     )
 
-    BEGIN {
-        Write-Verbose "[$($MyInvocation.MyCommand.Name)] Function started"
+    begin {
+        Write-Verbose "Function started"
     }
 
-    PROCESS {
-        Write-DebugMessage "[$($MyInvocation.MyCommand.Name)] ParameterSetName: $($PsCmdlet.ParameterSetName)"
-        Write-DebugMessage "[$($MyInvocation.MyCommand.Name)] PSBoundParameters: $($PSBoundParameters | Out-String)"
+    process {
+        Write-DebugMessage "ParameterSetName: $($PsCmdlet.ParameterSetName)"
+        Write-DebugMessage "PSBoundParameters: $($PSBoundParameters | Out-String)"
 
-        if (($_) -and -not($_ -is [ConfluencePS.Attachment])) {
-            $message = "The Object in the pipe is not an Attachment."
-            $exception = New-Object -TypeName System.ArgumentException -ArgumentList $message
-            Throw $exception
-        }
+        foreach ($_attachment in $Attachment) {
+            if ( -not (Get-Member -InputObject $_attachment -Name Filename) -or -not ($_attachment.Filename)) {
+                $writeErrorSplat = @{
+                    ExceptionType = "System.ApplicationException"
+                    Message       = "Attachment is missing the Filename"
+                    ErrorId       = "AtlassianPS.ConfluencePS.MissingProperty"
+                    Category      = "InvalidData"
+                    Cmdlet        = $PSCmdlet
+                }
+                WriteError @writeErrorSplat
+                continue
+            }
+            if ( -not (Get-Member -InputObject $_attachment -Name URL) -or -not ($_attachment.URL)) {
+                $writeErrorSplat = @{
+                    ExceptionType = "System.ApplicationException"
+                    Message       = "Attachment is missing the URL"
+                    ErrorId       = "AtlassianPS.ConfluencePS.MissingProperty"
+                    Category      = "InvalidData"
+                    Cmdlet        = $PSCmdlet
+                }
+                WriteError @writeErrorSplat
+                continue
+            }
+            if ( -not (Get-Member -InputObject $_attachment -Name MediaType) -or -not ($_attachment.MediaType)) {
+                $writeErrorSplat = @{
+                    ExceptionType = "System.ApplicationException"
+                    Message       = "Attachment is missing the MediaType"
+                    ErrorId       = "AtlassianPS.ConfluencePS.MissingProperty"
+                    Category      = "InvalidData"
+                    Cmdlet        = $PSCmdlet
+                }
+                WriteError @writeErrorSplat
+                continue
+            }
 
-        foreach ($_Attachment in $Attachment) {
             if ($Path) {
-                $filename = Join-Path $Path $_Attachment.Filename
+                $filename = Join-Path $Path $_attachment.Filename
             }
             else {
-                $filename = $_Attachment.Filename
+                $filename = $_attachment.Filename
             }
 
             $iwParameters = @{
-                Uri        = $_Attachment.URL
+                Uri        = $_attachment.URL
+                ServerName = $ServerName
                 Method     = 'Get'
-                Headers    = @{"Accept" = $_Attachment.MediaType}
+                Headers    = @{"Accept" = $_attachment.MediaType}
                 OutFile    = $filename
                 Credential = $Credential
             }
 
+            Write-DebugMessage "Invoking API Method with `$iwParameters" -BreakPoint
             $result = Invoke-Method @iwParameters
             (-not $result)
         }
     }
 
-    END {
-        Write-Verbose "[$($MyInvocation.MyCommand.Name)] Function ended"
+    end {
+        Write-Verbose "Function ended"
     }
 }
