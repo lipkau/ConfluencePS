@@ -3,11 +3,11 @@ external help file: ConfluencePS-help.xml
 layout: documentation
 locale: en-US
 Module Name: ConfluencePS
-online version: https://atlassianps.org/docs/ConfluencePS/commands/ConvertTo-ConfluenceTable/
-permalink: /docs/ConfluencePS/commands/ConvertTo-ConfluenceTable/
+online version: https://atlassianps.org/docs/ConfluencePS/commands/ConvertTo-Table/
+permalink: /docs/ConfluencePS/commands/ConvertTo-Table/
 schema: 2.0.0
 ---
-# ConvertTo-ConfluenceTable
+# ConvertTo-Table
 
 ## SYNOPSIS
 

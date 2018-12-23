@@ -3,11 +3,11 @@ external help file: ConfluencePS-help.xml
 layout: documentation
 locale: en-US
 Module Name: ConfluencePS
-online version: https://atlassianps.org/docs/ConfluencePS/commands/Get-ConfluenceAttachment/
-permalink: /docs/ConfluencePS/commands/Get-ConfluenceAttachment/
+online version: https://atlassianps.org/docs/ConfluencePS/commands/Get-Attachment/
+permalink: /docs/ConfluencePS/commands/Get-Attachment/
 schema: 2.0.0
 ---
-# Get-ConfluenceAttachment
+# Get-Attachment
 
 ## SYNOPSIS
 
@@ -16,10 +16,10 @@ Retrieve the child Attachments of a given wiki Page.
 ## SYNTAX
 
 ```powershell
-Get-ConfluenceAttachment [-Page] <AtlassianPS.ConfluencePS.Page[]>
- [-FileNameFilter <String>] [-MediaTypeFilter <String>] [-PageSize <UInt32>]
- [-ServerName <String>] [-Credential <PSCredential>] [-IncludeTotalCount] [-Skip <UInt64>]
- [-First <UInt64>] [<CommonParameters>]
+Get-ConfluenceAttachment [-Page] <Page[]> [-FileNameFilter <String>]
+ [-MediaTypeFilter <String>] [-PageSize <UInt32>] [-ServerName <String>]
+ [-Credential <PSCredential>] [-IncludeTotalCount] [-Skip <UInt64>] [-First <UInt64>]
+ [<CommonParameters>]
 ```
 
 ## DESCRIPTION

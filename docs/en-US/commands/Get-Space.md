@@ -3,11 +3,11 @@ external help file: ConfluencePS-help.xml
 layout: documentation
 locale: en-US
 Module Name: ConfluencePS
-online version: https://atlassianps.org/docs/ConfluencePS/commands/Get-ConfluenceSpace/
-permalink: /docs/ConfluencePS/commands/Get-ConfluenceSpace/
+online version: https://atlassianps.org/docs/ConfluencePS/commands/Get-Space/
+permalink: /docs/ConfluencePS/commands/Get-Space/
 schema: 2.0.0
 ---
-# Get-ConfluenceSpace
+# Get-Space
 
 ## SYNOPSIS
 

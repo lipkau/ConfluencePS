@@ -3,55 +3,54 @@ external help file: ConfluencePS-help.xml
 layout: documentation
 locale: en-US
 Module Name: ConfluencePS
-online version: https://atlassianps.org/docs/ConfluencePS/commands/New-ConfluenceSession/
-permalink: /docs/ConfluencePS/commands/New-ConfluenceSession/
+online version: https://atlassianps.org/docs/ConfluencePS/commands/Connect-Server/
+permalink: /docs/ConfluencePS/commands/Connect-Server/
 schema: 2.0.0
 ---
-
-# New-ConfluenceSession
+# Connect-Server
 
 ## SYNOPSIS
 
-Authenticate with the Confluence server and store the session.
+Establish a connection to a specific Confluence server.
 
 ## SYNTAX
 
 ```powershell
-New-ConfluenceSession [-ServerName] <String> [-Credential] <PSCredential>
- [[-Headers] <Hashtable>] [<CommonParameters>]
+Connect-ConfluenceServer [-ServerName] <String> [[-Credential] <PSCredential>]
+ [<CommonParameters>]
 ```
 
 ## DESCRIPTION
 
-Store an authenticated session with the Confluence server.
-This allows the user to use the ConfluencePS commands without having to provide
-`-Credential` every time.
-The session is only valid inside the current Powershell session.
+Establish a persistent connection to a Confluence server for the duration of the
+Powershell session.
+This connection will be used by all ConfluencePS commands unless different
+values are explicitly used for `-ServerName`.
 
 ## EXAMPLES
 
 ### Example 1
 
 ```powershell
-New-ConfluenceSession -ServerName "myWiki" -Credential "john"
+Add-AtlassianServerConfiguration -Name "myWiki" -Uri "https://wiki.contoso.com" -Type CONFLUENCE
+
+Connect-ConfluenceServer -ServerName "myWiki"
 ```
 
-Stores a session for `john` in the connection for myWiki.
-
-> By providing a String to `-Credential`, Powershell will open a dialog
-> requesting the password for the credential.
-> It is also possible to send a `PSCredential` object to `-Credential`.
+Set the default server to be used by ConfluencePS commands to `myWiki`
 
 ### Example 2
 
 ```powershell
-New-ConfluenceSession -ServerName "myWiki" -Credential "john"
-
-Get-ConfluenceSpace -ServerName "myWiki"
+Connect-ConfluenceServer -ServerName "TestServer" -Credential "john"
 ```
 
-Stores a session for `john` in the connection for myWiki and uses this session
-to fetch all Spaces `john` has access to.
+Set the default server to be used by ConfluencePS commands to `myWiki` and
+authenticate as `john`.
+
+> By providing a String to `-Credential`, Powershell will open a dialog
+> requesting the password for the credential.
+> It is also possible to send a `PSCredential` object to `-Credential`.
 
 ## PARAMETERS
 
@@ -68,8 +67,8 @@ Type: String
 Parameter Sets: (All)
 Aliases:
 
-Required: False
-Position: Named
+Required: True
+Position: 0
 Default value: None
 Accept pipeline input: True (ByValue)
 Accept wildcard characters: False
@@ -87,24 +86,8 @@ Parameter Sets: (All)
 Aliases:
 
 Required: False
-Position: Named
+Position: 1
 Default value: None
-Accept pipeline input: False
-Accept wildcard characters: False
-```
-
-### -Headers
-
-Additional headers that should be used for the HTTP requests.
-
-```yaml
-Type: Hashtable
-Parameter Sets: (All)
-Aliases:
-
-Required: False
-Position: 2
-Default value: @{}
 Accept pipeline input: False
 Accept wildcard characters: False
 ```
@@ -124,11 +107,13 @@ For more information, see about_CommonParameters
 
 ## OUTPUTS
 
+### System.String
+
 ## NOTES
 
 ## RELATED LINKS
 
-[Connect-ConfluenceServer](../Connect-ConfluenceServer)
+[New-ConfluenceSession](../New-ConfluenceSession)
 
 [about_ConfluencePS_Authentication](../../about/authentication.html)
 

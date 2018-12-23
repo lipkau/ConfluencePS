@@ -3,11 +3,11 @@ external help file: ConfluencePS-help.xml
 layout: documentation
 locale: en-US
 Module Name: ConfluencePS
-online version: https://atlassianps.org/docs/ConfluencePS/commands/Get-ConfluencePage/
-permalink: /docs/ConfluencePS/commands/Get-ConfluencePage/
+online version: https://atlassianps.org/docs/ConfluencePS/commands/Get-Page/
+permalink: /docs/ConfluencePS/commands/Get-Page/
 schema: 2.0.0
 ---
-# Get-ConfluencePage
+# Get-Page
 
 ## SYNOPSIS
 
@@ -98,7 +98,11 @@ Return all pages matching the query.
 
 ### -Page
 
-{{Fill Page Description}}
+Identifies the Page to be looked up.
+
+> This parameter takes Page objects as input.
+> But a String or Integer can also be passed.
+> This will be used as "Id" for the space.
 
 ```yaml
 Type: Page[]
@@ -121,7 +125,7 @@ This supports wildcards (*) to allow for partial matching.
 ```yaml
 Type: String
 Parameter Sets: bySpace
-Aliases: Name
+Aliases: ID
 
 Required: False
 Position: Named

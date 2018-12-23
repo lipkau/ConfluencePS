@@ -3,11 +3,11 @@ external help file: ConfluencePS-help.xml
 layout: documentation
 locale: en-US
 Module Name: ConfluencePS
-online version: https://atlassianps.org/docs/ConfluencePS/commands/Get-ConfluenceAttachmentFile/
-permalink: /docs/ConfluencePS/commands/Get-ConfluenceAttachmentFile/
+online version: https://atlassianps.org/docs/ConfluencePS/commands/Get-AttachmentFile/
+permalink: /docs/ConfluencePS/commands/Get-AttachmentFile/
 schema: 2.0.0
 ---
-# Get-ConfluenceAttachmentFile
+# Get-AttachmentFile
 
 ## SYNOPSIS
 

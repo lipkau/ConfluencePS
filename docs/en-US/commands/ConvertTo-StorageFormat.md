@@ -3,11 +3,11 @@ external help file: ConfluencePS-help.xml
 layout: documentation
 locale: en-US
 Module Name: ConfluencePS
-online version: https://atlassianps.org/docs/ConfluencePS/commands/ConvertTo-ConfluenceStorageFormat/
-permalink: /docs/ConfluencePS/commands/ConvertTo-ConfluenceStorageFormat/
+online version: https://atlassianps.org/docs/ConfluencePS/commands/ConvertTo-StorageFormat/
+permalink: /docs/ConfluencePS/commands/ConvertTo-StorageFormat/
 schema: 2.0.0
 ---
-# ConvertTo-ConfluenceStorageFormat
+# ConvertTo-StorageFormat
 
 ## SYNOPSIS
 
