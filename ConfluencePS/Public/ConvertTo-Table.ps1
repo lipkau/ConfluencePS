@@ -1,4 +1,5 @@
 function ConvertTo-Table {
+    # .ExternalHelp ..\ConfluencePS-help.xml
     [CmdletBinding()]
     [OutputType( [String] )]
     [System.Diagnostics.CodeAnalysis.SuppressMessage('PSUseDeclaredVarsMoreThanAssignments', '')]
@@ -17,18 +18,18 @@ function ConvertTo-Table {
         Write-Verbose "Function started"
 
         $sb = [System.Text.StringBuilder]::new()
+
+        $script:HeaderGenerated = $NoHeader
     }
 
     process {
         Write-DebugMessage "ParameterSetName: $($PsCmdlet.ParameterSetName)"
         Write-DebugMessage "PSBoundParameters: $($PSBoundParameters | Out-String)"
 
-        $HeaderGenerated = $NoHeader
-
         # This ForEach needed if the content wasn't piped in
         $Content | ForEach-Object {
             if ($Vertical) {
-                if ($HeaderGenerated) {$pipe = '|'}
+                if ($script:HeaderGenerated) {$pipe = '|'}
                 else {$pipe = '||'}
 
                 # Put an empty row between multiple tables (objects)
@@ -44,9 +45,9 @@ function ConvertTo-Table {
                 $Spacer = $true
             } else {
                 # Header row enclosed by ||
-                if (-not $HeaderGenerated) {
+                if (-not $script:HeaderGenerated) {
                     $null = $sb.AppendLine("|| {0} ||" -f ($_.PSObject.Properties.Name -join " || "))
-                    $HeaderGenerated = $true
+                    $script:HeaderGenerated = $true
                 }
 
                 # All other rows enclosed by |
@@ -57,6 +58,8 @@ function ConvertTo-Table {
     }
 
     end {
+        $script:HeaderGenerated = $null
+
         # Return the array as one large, multi-line string
         $sb.ToString()
 
