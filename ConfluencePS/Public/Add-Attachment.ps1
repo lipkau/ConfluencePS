@@ -1,25 +1,12 @@
 function Add-Attachment {
-    [CmdletBinding(
-        ConfirmImpact = 'Low',
-        SupportsShouldProcess = $true
-    )]
-    [OutputType([ConfluencePS.Attachment])]
+    # .ExternalHelp ..\ConfluencePS-help.xml
+    [CmdletBinding( ConfirmImpact = 'Low', SupportsShouldProcess )]
+    [OutputType( [AtlassianPS.ConfluencePS.Attachment] )]
     param(
-        [Parameter( Mandatory = $true )]
-        [URi]$apiURi,
-
-        [Parameter( Mandatory = $true )]
-        [PSCredential]$Credential,
-
-        [Parameter(
-            Position = 0,
-            Mandatory = $true,
-            ValueFromPipeline = $true,
-            ValueFromPipelineByPropertyName = $true
-        )]
-        [ValidateRange(1, [int]::MaxValue)]
+        [Parameter( Mandatory, ValueFromPipeline )]
         [Alias('ID')]
-        [Int]$PageID,
+        [AtlassianPS.ConfluencePS.Page]
+        $Page,
 
         [Parameter( Mandatory, ValueFromPipeline, ValueFromPipelineByPropertyName )]
         [ValidateScript(
@@ -39,39 +26,72 @@ function Add-Attachment {
                 }
             }
         )]
-        [Alias('InFile', 'FullName', 'Path', 'PSPath')]
+        [Alias('InFile', 'PSPath')]
         [String[]]
-        $FilePath
+        $Path,
+
+        [Parameter()]
+        [ValidateNotNullOrEmpty()]
+        [ArgumentCompleter(
+            {
+                param($commandName, $parameterName, $wordToComplete, $commandAst, $fakeBoundParameter)
+                $command = Get-Command "Get-*ServerConfiguration" -Module AtlassianPS.Configuration
+                & $command.Name |
+                    Where-Object { $_.Type -eq [AtlassianPS.ServerType]"Confluence" } |
+                    Where-Object { $_.Name -like "$wordToComplete*" } |
+                    ForEach-Object { [System.Management.Automation.CompletionResult]::new( $_.Name, $_.Name, [System.Management.Automation.CompletionResultType]::ParameterValue, $_.Name ) }
+            }
+        )]
+        [String]
+        $ServerName = (Get-DefaultServer),
+
+        [Parameter()]
+        [System.Management.Automation.PSCredential]
+        [System.Management.Automation.Credential()]
+        $Credential = [System.Management.Automation.PSCredential]::Empty
     )
 
     begin {
-        Write-Verbose "[$($MyInvocation.MyCommand.Name)] Function started"
+        Write-Verbose "Function started"
 
-        $resourceApi = "$apiURi/content/{0}/child/attachment"
+        $resourceApi = "/rest/api/content/{0}/child/attachment"
     }
 
     process {
-        Write-DebugMessage "[$($MyInvocation.MyCommand.Name)] ParameterSetName: $($PsCmdlet.ParameterSetName)"
-        Write-DebugMessage "[$($MyInvocation.MyCommand.Name)] PSBoundParameters: $($PSBoundParameters | Out-String)"
+        Write-DebugMessage "ParameterSetName: $($PsCmdlet.ParameterSetName)"
+        Write-DebugMessage "PSBoundParameters: $($PSBoundParameters | Out-String)"
 
-        $parameter = @{
-            URI        = $resourceApi -f $PageID
-            Method     = "POST"
-            Credential = $Credential
-            OutputType = [ConfluencePS.Attachment]
-            Verbose    = $false
-        }
-        foreach ($file in $FilePath) {
-            $parameter["InFile"] = $file
+        if ( -not (Get-Member -InputObject $Page -Name Id) -or -not ($Page.Id)) {
+                $writeErrorSplat = @{
+                    ExceptionType = "System.ApplicationException"
+                    Message       = "Page is missing the Id"
+                    ErrorId       = "AtlassianPS.ConfluencePS.MissingProperty"
+                    Category      = "InvalidData"
+                    Cmdlet        = $PSCmdlet
+                }
+                WriteError @writeErrorSplat
+                continue
+            }
 
-            Write-Debug "[$($MyInvocation.MyCommand.Name)] Invoking Add Attachment Method with `$parameter"
-            if ($PSCmdlet.ShouldProcess($PageID, "Adding attachment(s) '$($file)'.")) {
-                Invoke-Method @parameter
+        foreach ($_path in $Path) {
+            $iwParameters = @{
+                URI        = $resourceApi -f $Page.Id
+                ServerName = $ServerName
+                Method     = 'Post'
+                InFile     = $_path
+                Credential = $Credential
+                OutputType = [AtlassianPS.ConfluencePS.Attachment]
+                Verbose    = $false
+            }
+
+            Write-DebugMessage "Invoking API Method with `$iwParameters" -BreakPoint
+            if ($PSCmdlet.ShouldProcess("pageid=[$($Page.ID)]", "Adding Attachment(s)")) {
+                Invoke-Method @iwParameters
             }
         }
     }
 
     end {
-        Write-Verbose "[$($MyInvocation.MyCommand.Name)] Complete"
+        Write-Verbose "Complete"
     }
 }

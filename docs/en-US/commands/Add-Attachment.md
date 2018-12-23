@@ -1,11 +1,11 @@
 ---
 external help file: ConfluencePS-help.xml
-online version: https://atlassianps.org/docs/ConfluencePS/commands/Add-Attachment/
-Module Name: ConfluencePS
-locale: en-US
-schema: 2.0.0
 layout: documentation
+locale: en-US
+Module Name: ConfluencePS
+online version: https://atlassianps.org/docs/ConfluencePS/commands/Add-Attachment/
 permalink: /docs/ConfluencePS/commands/Add-Attachment/
+schema: 2.0.0
 ---
 # Add-Attachment
 
@@ -16,96 +16,69 @@ Add a new attachment to an existing Confluence page.
 ## SYNTAX
 
 ```powershell
-Add-ConfluenceAttachment -apiURi <Uri> -Credential <PSCredential> [[-PageID] <Int32>] -FilePath <String> [-WhatIf] [-Confirm]
+Add-ConfluenceAttachment [-Page] <Page> [-Path <String[]>] [-ServerName <String>]
+ [-Credential <PSCredential>] [-WhatIf] [-Confirm] [<CommonParameters>]
 ```
 
 ## DESCRIPTION
 
-Add Attachments (one or more) to Confluence pages (one or more).
+Add Attachments to a Confluence page.
 If the Attachment did not exist previously, it will be created.
 
-This will not update an already existing Attachment; see Set-Attachment for updating a file.
+This will not update an already existing Attachment.
+
+> See `Set-ConfluenceAttachment` for updating a file.
 
 ## EXAMPLES
 
-### -------------------------- EXAMPLE 1 --------------------------
+### EXAMPLE 1
 
 ```powershell
-Add-ConfluenceAttachment -PageID 123456 -FilePath test.png -Verbose
+Add-ConfluenceAttachment -Page 123456 -FilePath test.png
 ```
 
 Adds the Attachment test.png to the wiki page with ID 123456.
--Verbose output provides extra technical details, if interested.
 
-### -------------------------- EXAMPLE 2 --------------------------
+### EXAMPLE 2
 
 ```powershell
-Get-ConfluencePage -SpaceKey SRV | Add-ConfluenceAttachment -FilePath test.png -WhatIf
+Get-ConfluencePage -SpaceKey SRV |
+    Add-ConfluenceAttachment -FilePath test.png -WhatIf
 ```
 
-Simulates adding the Attachment test.png to all pages in the space with key SRV.
--WhatIf provides PageIDs of pages that would have been affected.
+Simulates adding the file `test.png` to all pages in the space with key SRV.
 
 ## PARAMETERS
 
-### -apiURi
-
-The URi of the API interface.
-Value can be set persistently with Set-Info.
-
-```yaml
-Type: Uri
-Parameter Sets: (All)
-Aliases:
-
-Required: True
-Position: Named
-Default value: None
-Accept pipeline input: False
-Accept wildcard characters: False
-```
-
-### -Credential
-
-Confluence's credentials for authentication.
-Value can be set persistently with Set-ConfluenceInfo.
-
-```yaml
-Type: PSCredential
-Parameter Sets: (All)
-Aliases:
-
-Required: True
-Position: Named
-Default value: None
-Accept pipeline input: False
-Accept wildcard characters: False
-```
-
-### -PageID
+### -Page
 
 The ID of the page to which apply the Attachment to.
 Accepts multiple IDs, including via pipeline input.
 
+> This parameter takes Page objects as input.
+> But a String or Integer can also be passed.
+> This will be used as "Id" for the space.
+
 ```yaml
-Type: Int32
+Type: Page
 Parameter Sets: (All)
 Aliases: ID
 
 Required: True
-Position: 1
+Position: 0
 Default value: None
-Accept pipeline input: True (ByPropertyName, ByValue)
+Accept pipeline input: True (ByValue)
 Accept wildcard characters: False
 ```
 
-### -FilePath
+### -Path
 
 One or more files to be added.
 
 ```yaml
 Type: String[]
 Parameter Sets: (All)
+Aliases: InFile, PSPath
 
 Required: True
 Position: Named
@@ -148,14 +121,71 @@ Accept pipeline input: False
 Accept wildcard characters: False
 ```
 
+### -ServerName
+
+Name of the server registered in AtlassianPS.Configuration.
+
+This parameter supports tab-completion.
+
+> More information on how to authenticate in [about_ConfluencePS_Authentication](../../about/authentication.html)
+
+```yaml
+Type: String
+Parameter Sets: (All)
+Aliases:
+
+Required: False
+Position: Named
+Default value: None
+Accept pipeline input: True (ByValue)
+Accept wildcard characters: False
+```
+
+### -Credential
+
+Confluence's credentials for authentication.
+
+> More information on how to authenticate in [about_ConfluencePS_Authentication](../../about/authentication.html)
+
+```yaml
+Type: PSCredential
+Parameter Sets: (All)
+Aliases:
+
+Required: False
+Position: Named
+Default value: None
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### CommonParameters
+
+This cmdlet supports the common parameters: `-Debug`, `-ErrorAction`,
+`-ErrorVariable`, `-InformationAction`, `-InformationVariable`, `-OutVariable`,
+`-OutBuffer`, `-PipelineVariable`, `-Verbose`, `-WarningAction`, and
+`-WarningVariable`.
+For more information, see about_CommonParameters
+(<http://go.microsoft.com/fwlink/?LinkID=113216>).
+
 ## INPUTS
+
+### System.String
+
+### AtlassianPS.ConfluencePS.Page
 
 ## OUTPUTS
 
-### ConfluencePS.Attachment
+### AtlassianPS.ConfluencePS.Attachment
 
 ## NOTES
 
 ## RELATED LINKS
 
-[https://github.com/AtlassianPS/ConfluencePS](https://github.com/AtlassianPS/ConfluencePS)
+[Get-ConfluencePage](../Get-ConfluencePage)
+
+[Get-ConfluenceAttachment](../Get-ConfluenceAttachment)
+
+[Set-ConfluenceAttachment](../Set-ConfluenceAttachment)
+
+[Remove-ConfluenceAttachment](../Remove-ConfluenceAttachment)
