@@ -56,7 +56,7 @@ Describe "Help tests" -Tag Documentation, Build {
 
     #region Public Functions
     foreach ($command in $commands) {
-        $commandName = $command.Name
+        $commandName = $command.Name -replace "-Confluence", "-"
         $markdownFile = Resolve-Path "$env:BHProjectPath/docs/en-US/commands/$commandName.md"
 
         # The module-qualified command fails on Microsoft.PowerShell.Archive cmdlets

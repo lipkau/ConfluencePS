@@ -100,14 +100,14 @@ Describe "Get-AttachmentFile" -Tag Unit {
                 URL = "https://google.com/"
                 MediaType = "text/plain"
                 Filename = "test.txt"
-            }) -Path "TestDrive:\"
+            }) -Path "TestDrive:/"
 
             $assertMockCalledSplat = @{
                 CommandName     = "Invoke-Method"
                 ModuleName      = $env:BHProjectName
                 ParameterFilter = {
                     $Uri -eq "https://google.com/" -and
-                    $OutFile -eq "TestDrive:\test.txt"
+                    $OutFile -match "^TestDrive:[\/\\]test.txt$"
                 }
                 Exactly         = $true
                 Times           = 1
@@ -183,12 +183,12 @@ Describe "Get-AttachmentFile" -Tag Unit {
         }
 
         It "throws a terminating error if the path is invalid" {
-            { Get-ConfluenceAttachmentFile -Attachment $attachment -Path "TestDrive:\" } | Should -Not -Throw
+            { Get-ConfluenceAttachmentFile -Attachment $attachment -Path "TestDrive:/" } | Should -Not -Throw
 
-            { Get-ConfluenceAttachmentFile -Attachment $attachment -Path "TestDrive:\folder" } | Should -Throw
+            { Get-ConfluenceAttachmentFile -Attachment $attachment -Path "TestDrive:/folder" } | Should -Throw "Path not found"
 
-            $null = New-item -Path "TestDrive:\folder" -ItemType Directory
-            { Get-ConfluenceAttachmentFile -Attachment $attachment -Path "TestDrive:\folder" } | Should -Not -Throw
+            $null = New-item -Path "TestDrive:/folder" -ItemType Directory
+            { Get-ConfluenceAttachmentFile -Attachment $attachment -Path "TestDrive:/folder" } | Should -Not -Throw
         }
     }
 }
