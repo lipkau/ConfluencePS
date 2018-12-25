@@ -102,7 +102,7 @@ Identifies the Page to be looked up.
 
 > This parameter takes Page objects as input.
 > But a String or Integer can also be passed.
-> This will be used as "Id" for the space.
+> This will be used as "Id" for the Page.
 
 ```yaml
 Type: Page[]
@@ -136,7 +136,11 @@ Accept wildcard characters: True
 
 ### -Space
 
-Filter results by space object(s), typically from the pipeline.
+Limits the search for Pages to a specific Space.
+
+> This parameter takes Space objects as input.
+> But a String can also be passed.
+> This will be used as "Key" for the space.
 
 ```yaml
 Type: Space

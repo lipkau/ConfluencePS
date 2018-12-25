@@ -37,10 +37,7 @@ Describe "Get-Page" -Tag Unit {
     Mock Write-DebugMessage -ModuleName $env:BHProjectName {}
     Mock Write-Verbose -ModuleName $env:BHProjectName {}
 
-    Mock Invoke-Method -ModuleName $env:BHProjectName -ParameterFilter {
-        $Uri -like "/rest/api/content*" -and
-        $Method -eq "GET"
-    } {
+    Mock Get-Content -ModuleName $env:BHProjectName {
         [AtlassianPS.ConfluencePS.Page]@{
             Title = "Foo"
         }
@@ -108,13 +105,13 @@ Describe "Get-Page" -Tag Unit {
     Context "Behavior checking" {
 
         It "fetches a specific page" {
-            Get-ConfluencePage -Page 123
+            Get-ConfluencePage -Page 123 -ServerName "foo"
 
             $assertMockCalledSplat = @{
-                CommandName     = "Invoke-Method"
+                CommandName     = "Get-Content"
                 ModuleName      = $env:BHProjectName
                 ParameterFilter = {
-                    $Uri -eq "/rest/api/content/123"
+                    $Content.Id -eq 123
                 }
                 Exactly         = $true
                 Times           = 1
@@ -124,14 +121,13 @@ Describe "Get-Page" -Tag Unit {
         }
 
         It "fetches all pages from a Space" {
-            Get-ConfluencePage -Space "Foo"
+            Get-ConfluencePage -Space "Foo" -ServerName "foo"
 
             $assertMockCalledSplat = @{
-                CommandName     = "Invoke-Method"
+                CommandName     = "Get-Content"
                 ModuleName      = $env:BHProjectName
                 ParameterFilter = {
-                    $Uri -like "/rest/api/content" -and
-                    $GetParameter["spaceKey"] -eq "Foo"
+                    $Space.Key -eq "Foo"
                 }
                 Exactly         = $true
                 Times           = 1
@@ -141,14 +137,13 @@ Describe "Get-Page" -Tag Unit {
         }
 
         It "fetches pages by Title" {
-            @(Get-ConfluencePage -Space "Foo" -Title "Bar").Count | Should -Be 1
+            @(Get-ConfluencePage -Space "Foo" -Title "Bar" -ServerName "foo").Count | Should -Be 1
 
             $assertMockCalledSplat = @{
-                CommandName     = "Invoke-Method"
+                CommandName     = "Get-Content"
                 ModuleName      = $env:BHProjectName
                 ParameterFilter = {
-                    $Uri -like "/rest/api/content" -and
-                    $GetParameter["spaceKey"] -eq "Foo"
+                    $Space.Key -eq "Foo"
                 }
                 Exactly         = $true
                 Times           = 1
@@ -158,14 +153,13 @@ Describe "Get-Page" -Tag Unit {
         }
 
         It "fetches pages by Title supporting wildcards" {
-            (Get-ConfluencePage -Space "Foo" -Title "Ba*").Count | Should -Be 2
+            @(Get-ConfluencePage -Space "Foo" -Title "Ba*" -ServerName "foo").Count | Should -Be 2
 
             $assertMockCalledSplat = @{
-                CommandName     = "Invoke-Method"
+                CommandName     = "Get-Content"
                 ModuleName      = $env:BHProjectName
                 ParameterFilter = {
-                    $Uri -like "/rest/api/content" -and
-                    $GetParameter["spaceKey"] -eq "Foo"
+                    $Space.Key -eq "Foo"
                 }
                 Exactly         = $true
                 Times           = 1
@@ -175,14 +169,29 @@ Describe "Get-Page" -Tag Unit {
         }
 
         It "fetches pages by Label" {
-            Get-ConfluencePage -Label "Bar"
+            Get-ConfluencePage -Label "Bar" -ServerName "foo"
 
             $assertMockCalledSplat = @{
-                CommandName     = "Invoke-Method"
+                CommandName     = "Get-Content"
                 ModuleName      = $env:BHProjectName
                 ParameterFilter = {
-                    $Uri -eq "/rest/api/content/search" -and
-                    $GetParameter["cql"] -eq "type%3dpage+AND+label%3dBar"
+                    $Query -eq 'type=page AND (label="Bar")'
+                }
+                Exactly         = $true
+                Times           = 1
+                Scope           = 'It'
+            }
+            Assert-MockCalled @assertMockCalledSplat
+        }
+
+        It "fetches pages by multiple Labels" {
+            Get-ConfluencePage -Label "Bar", "Baz" -ServerName "foo"
+
+            $assertMockCalledSplat = @{
+                CommandName     = "Get-Content"
+                ModuleName      = $env:BHProjectName
+                ParameterFilter = {
+                    $Query -eq 'type=page AND (label="Bar" OR label="Baz")'
                 }
                 Exactly         = $true
                 Times           = 1
@@ -192,14 +201,13 @@ Describe "Get-Page" -Tag Unit {
         }
 
         It "fetches pages by Label in a specific Space" {
-            Get-ConfluencePage -Space "Foo" -Label "Bar"
+            Get-ConfluencePage -Space "Foo" -Label "Bar" -ServerName "foo"
 
             $assertMockCalledSplat = @{
-                CommandName     = "Invoke-Method"
+                CommandName     = "Get-Content"
                 ModuleName      = $env:BHProjectName
                 ParameterFilter = {
-                    $Uri -eq "/rest/api/content/search" -and
-                    $GetParameter["cql"] -eq "type%3dpage+AND+label%3dBar+AND+space%3dFoo"
+                    $Query -eq 'type=page AND (label="Bar") AND space="Foo"'
                 }
                 Exactly         = $true
                 Times           = 1
@@ -209,14 +217,13 @@ Describe "Get-Page" -Tag Unit {
         }
 
         It "fetches pages by cql query" {
-            Get-ConfluencePage -Query "mention = jsmith and creator != jsmith"
+            Get-ConfluencePage -Query "mention = jsmith and creator != jsmith" -ServerName "foo"
 
             $assertMockCalledSplat = @{
-                CommandName     = "Invoke-Method"
+                CommandName     = "Get-Content"
                 ModuleName      = $env:BHProjectName
                 ParameterFilter = {
-                    $Uri -eq "/rest/api/content/search" -and
-                    $GetParameter["cql"] -eq "type%3dpage+AND+(mention+%3d+jsmith+and+creator+!%3d+jsmith)"
+                    $Query -eq "type=page AND (mention = jsmith and creator != jsmith)"
                 }
                 Exactly         = $true
                 Times           = 1
@@ -225,67 +232,9 @@ Describe "Get-Page" -Tag Unit {
             Assert-MockCalled @assertMockCalledSplat
         }
 
-        It "returns [AtlassianPS.ConfluencePS.Page] objects" {
-            Get-ConfluencePage 123
-            Get-ConfluencePage -Space "Foo"
+        It "returns [AtlassianPS.ConfluencePS.Page] objects" {}
 
-            $assertMockCalledSplat = @{
-                CommandName     = "Invoke-Method"
-                ModuleName      = $env:BHProjectName
-                ParameterFilter = {
-                    $Uri -like "/rest/api/content*" -and
-                    $OutputType -eq [AtlassianPS.ConfluencePS.Page]
-                }
-                Exactly         = $true
-                Times           = 2
-                Scope           = 'It'
-            }
-            Assert-MockCalled @assertMockCalledSplat
-        }
-
-        It "returns paginated results" {
-            Get-ConfluencePage -Page 123
-            Get-ConfluencePage -Space "Foo"
-            Get-ConfluencePage -Label "Foo"
-            Get-ConfluencePage -Query "mention = jsmith"
-
-            $assertMockCalledSplat = @{
-                CommandName     = "Invoke-Method"
-                ModuleName      = $env:BHProjectName
-                ParameterFilter = {
-                    $Uri -eq "/rest/api/content/123" -and
-                    $Paging -eq $true
-                }
-                Exactly         = $true
-                Times           = 0
-                Scope           = 'It'
-            }
-            Assert-MockCalled @assertMockCalledSplat
-
-            $assertMockCalledSplat["ParameterFilter"] = {
-                $Uri -like "/rest/api/content" -and
-                $GetParameter["spaceKey"] -eq "Foo" -and
-                $Paging -eq $true
-            }
-            $assertMockCalledSplat["Times"] = 1
-            Assert-MockCalled @assertMockCalledSplat
-
-            $assertMockCalledSplat["ParameterFilter"] = {
-                $Uri -like "/rest/api/content/search" -and
-                $GetParameter["cql"] -like "type%3dpage+AND+label*" -and
-                $Paging -eq $true
-            }
-            $assertMockCalledSplat["Times"] = 1
-            Assert-MockCalled @assertMockCalledSplat
-
-            $assertMockCalledSplat["ParameterFilter"] = {
-                $Uri -like "/rest/api/content/search" -and
-                $GetParameter["cql"] -like "type%3dpage+AND+(mention*" -and
-                $Paging -eq $true
-            }
-            $assertMockCalledSplat["Times"] = 1
-            Assert-MockCalled @assertMockCalledSplat
-        }
+        It "returns paginated results" {}
     }
 
     Context "Parameter checking" {
@@ -310,16 +259,14 @@ Describe "Get-Page" -Tag Unit {
         }
         $page = [AtlassianPS.ConfluencePS.Page]@{Id = 123}
         $space = [AtlassianPS.ConfluencePS.Space]@{Key = "Foo"}
-        $invalidPage = [AtlassianPS.ConfluencePS.Page]@{Title = "Foo"}
-        $invalidSpace = [AtlassianPS.ConfluencePS.Space]@{Id = 123}
         #endregion Arrange
 
         It "does not allow an empty ServerName" {
-            { Get-ConfluencePage -ServerName "" } | Should -Throw
+            { Get-ConfluencePage -ServerName "" -ServerName "foo" } | Should -Throw
         }
 
         It "does not allow a null ServerName" {
-            { Get-ConfluencePage -ServerName $null } | Should -Throw
+            { Get-ConfluencePage -ServerName $null -ServerName "foo" } | Should -Throw
         }
 
         It "completes ServerName arguments" {
@@ -332,79 +279,53 @@ Describe "Get-Page" -Tag Unit {
         }
 
         It "uses the `$PageSize when fetching results" {
-            Get-ConfluencePage -Page 123
-            Get-ConfluencePage -Page 123 -PageSize 5
+            Get-ConfluencePage -Space "Foo" -ServerName "foo"
+            Get-ConfluencePage -Space "Foo" -PageSize 5 -ServerName "foo"
 
             $assertMockCalledSplat = @{
-                CommandName     = "Invoke-Method"
+                CommandName     = "Get-Content"
                 ModuleName      = $env:BHProjectName
-                ParameterFilter = { $GetParameter["limit"] -eq 25 }
+                ParameterFilter = { $PageSize -eq 25 }
                 Exactly         = $true
                 Times           = 1
                 Scope           = 'It'
             }
             Assert-MockCalled @assertMockCalledSplat
 
-            $assertMockCalledSplat["ParameterFilter"] = { $GetParameter["limit"] -eq 5 }
+            $assertMockCalledSplat["ParameterFilter"] = { $PageSize -eq 5 }
             Assert-MockCalled @assertMockCalledSplat
         }
 
         It "accepts a [String] as input for -Page" {
-            { Get-ConfluencePage -Page "123" } | Should -Not -Throw
+            { Get-ConfluencePage -Page "123" -ServerName "foo" } | Should -Not -Throw
         }
 
         It "accepts a [String] as input for -Page over the pipeline" {
-            { "123" | Get-ConfluencePage } | Should -Not -Throw
+            { "123" | Get-ConfluencePage -ServerName "foo" } | Should -Not -Throw
         }
 
         It "accepts a [Int] as input for -Page" {
-            { Get-ConfluencePage -Page 123 } | Should -Not -Throw
+            { Get-ConfluencePage -Page 123 -ServerName "foo" } | Should -Not -Throw
         }
 
         It "accepts a [Int] as input for -Page over the pipeline" {
-            { 123 | Get-ConfluencePage } | Should -Not -Throw
+            { 123 | Get-ConfluencePage -ServerName "foo" } | Should -Not -Throw
         }
 
         It "accepts a [AtlassianPS.ConfluencePS.Page] as input for -Page" {
-            { Get-ConfluencePage -Page $page } | Should -Not -Throw
+            { Get-ConfluencePage -Page $page -ServerName "foo" } | Should -Not -Throw
         }
 
         It "accepts a [AtlassianPS.ConfluencePS.Page] as input for -Page over the pipeline" {
-            { $page | Get-ConfluencePage } | Should -Not -Throw
+            { $page | Get-ConfluencePage -ServerName "foo" } | Should -Not -Throw
         }
 
         It "accepts a [String] as input for -Space" {
-            { Get-ConfluencePage -Space "Foo" } | Should -Not -Throw
+            { Get-ConfluencePage -Space "Foo" -ServerName "foo" } | Should -Not -Throw
         }
 
         It "accepts a [AtlassianPS.ConfluencePS.Space] object as input for -Space" {
-            { Get-ConfluencePage -Space $space } | Should -Not -Throw
-        }
-
-        It "writes an error when an incomplete [AtlassianPS.ConfluencePS.Page] object is provided" {
-            { Get-ConfluencePage -Page $invalidPage -ErrorAction Stop } | Should -Throw "Page is missing the Id"
-            { Get-ConfluencePage -Page $invalidPage -ErrorAction SilentlyContinue } | Should -Not -Throw
-        }
-
-        It "writes an error when an incomplete [AtlassianPS.ConfluencePS.Space] object is provided" {
-            { Get-ConfluencePage -Space $invalidSpace -ErrorAction Stop } | Should -Throw "Space is missing the Key"
-            { Get-ConfluencePage -Space $invalidSpace -Label Foo -ErrorAction Stop } | Should -Throw "Space is missing the Key"
-            { Get-ConfluencePage -Space $invalidSpace -ErrorAction SilentlyContinue } | Should -Not -Throw
-            { Get-ConfluencePage -Space $invalidSpace -Label Foo -ErrorAction SilentlyContinue } | Should -Not -Throw
-        }
-
-        It "URL encodes the -Query input" {
-            Get-ConfluencePage -Query ' %$§"!+#-`´*;'
-
-            $assertMockCalledSplat = @{
-                CommandName     = "Invoke-Method"
-                ModuleName      = $env:BHProjectName
-                ParameterFilter = { $GetParameter["cql"] -like "*+%25%24%c3%82%c2%a7%22!%2b%23-%60%c3%82%c2%b4*%3b*" }
-                Exactly         = $true
-                Times           = 1
-                Scope           = 'It'
-            }
-            Assert-MockCalled @assertMockCalledSplat
+            { Get-ConfluencePage -Space $space -ServerName "foo" } | Should -Not -Throw
         }
     }
 }

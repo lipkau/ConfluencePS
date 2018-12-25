@@ -153,9 +153,20 @@ namespace AtlassianPS
             public Content() {}
 
             public UInt32 ID { get; set; }
+            public ContentStatus Status { get; set; }
+            public String Title { get; set; }
             public Label[] Labels { get; set; }
             public Uri URL { get; set; }
             public Uri Self { get; set; }
+        }
+
+        public class BlogPost : Content
+        {
+            public BlogPost(String ID) : base(ID) {}
+            public BlogPost(UInt32 ID) : base(ID) {}
+            public BlogPost() : base() {}
+
+            // TODO
         }
 
         public class Page : Content
@@ -164,8 +175,6 @@ namespace AtlassianPS
             public Page(UInt32 ID) : base(ID) {}
             public Page() : base() {}
 
-            public ContentStatus Status { get; set; }
-            public String Title { get; set; }
             public Space Space { get; set; }
             public User Author { get; set; }
             public Version Version { get; set; }
@@ -199,11 +208,6 @@ namespace AtlassianPS
             {
                 return "[att" + ID + "] " + Title;
             }
-        }
-
-        public class BlogPost
-        {
-            // TODO
         }
 
         public class Comment
