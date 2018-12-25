@@ -155,6 +155,23 @@ Describe "Get-Attachment" -Tag Unit {
             }
             Assert-MockCalled @assertMockCalledSplat
         }
+
+        It "returns [AtlassianPS.ConfluencePS.Attachment] objects" {
+            Get-ConfluenceAttachment -Page 123
+
+            $assertMockCalledSplat = @{
+                CommandName     = "Invoke-Method"
+                ModuleName      = $env:BHProjectName
+                ParameterFilter = {
+                    $Uri -eq "/rest/api/content/123/child/attachment" -and
+                    $OutputType -eq [AtlassianPS.ConfluencePS.Attachment]
+                }
+                Exactly         = $true
+                Times           = 1
+                Scope           = 'It'
+            }
+            Assert-MockCalled @assertMockCalledSplat
+        }
     }
 
     Context "Parameter checking" {
