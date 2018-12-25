@@ -62,16 +62,16 @@ function Add-Attachment {
         Write-DebugMessage "PSBoundParameters: $($PSBoundParameters | Out-String)"
 
         if ( -not (Get-Member -InputObject $Page -Name Id) -or -not ($Page.Id)) {
-                $writeErrorSplat = @{
-                    ExceptionType = "System.ApplicationException"
-                    Message       = "Page is missing the Id"
-                    ErrorId       = "AtlassianPS.ConfluencePS.MissingProperty"
-                    Category      = "InvalidData"
-                    Cmdlet        = $PSCmdlet
-                }
-                WriteError @writeErrorSplat
-                continue
+            $writeErrorSplat = @{
+                ExceptionType = "System.ApplicationException"
+                Message       = "Page is missing the Id"
+                ErrorId       = "AtlassianPS.ConfluencePS.MissingProperty"
+                Category      = "InvalidData"
+                Cmdlet        = $PSCmdlet
             }
+            WriteError @writeErrorSplat
+            continue
+        }
 
         foreach ($_path in $Path) {
             $iwParameters = @{
