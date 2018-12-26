@@ -65,7 +65,12 @@ function Get-Page {
 
         switch ($PsCmdlet.ParameterSetName) {
             "byId" {
-                Get-Content -Content $Page -ServerName $ServerName -Credential $Credential
+                $getContentSplat = @{
+                    Content    = $Page
+                    ServerName = $ServerName
+                    Credential = $Credential
+                }
+                Get-Content @getContentSplat
                 break
             }
             "bySpace" {
@@ -74,6 +79,11 @@ function Get-Page {
                     PageSize   = $PageSize
                     ServerName = $ServerName
                     Credential = $Credential
+                }
+
+                # Paging
+                ($PSCmdlet.PagingParameters | Get-Member -MemberType Property).Name | ForEach-Object {
+                    $getContentSplat[$_] = $PSCmdlet.PagingParameters.$_
                 }
                 Get-Content @getContentSplat | Where-Object { $_.Title -like $Title }
                 break
@@ -93,6 +103,11 @@ function Get-Page {
                     ServerName = $ServerName
                     Credential = $Credential
                 }
+
+                # Paging
+                ($PSCmdlet.PagingParameters | Get-Member -MemberType Property).Name | ForEach-Object {
+                    $getContentSplat[$_] = $PSCmdlet.PagingParameters.$_
+                }
                 Get-Content @getContentSplat
                 break
             }
@@ -102,6 +117,11 @@ function Get-Page {
                     PageSize   = $PageSize
                     ServerName = $ServerName
                     Credential = $Credential
+                }
+
+                # Paging
+                ($PSCmdlet.PagingParameters | Get-Member -MemberType Property).Name | ForEach-Object {
+                    $getContentSplat[$_] = $PSCmdlet.PagingParameters.$_
                 }
                 Get-Content @getContentSplat
                 break
