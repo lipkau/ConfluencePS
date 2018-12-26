@@ -1,113 +1,85 @@
 function Add-Label {
-    [CmdletBinding(
-        ConfirmImpact = 'Low',
-        SupportsShouldProcess = $true
+    # .ExternalHelp ..\ConfluencePS-help.xml
+    [CmdletBinding( ConfirmImpact = 'Low', SupportsShouldProcess )]
+    [OutputType(
+        [AtlassianPS.ConfluencePS.BlogPost],
+        [AtlassianPS.ConfluencePS.Content],
+        [AtlassianPS.ConfluencePS.Page]
     )]
-    [OutputType([ConfluencePS.ContentLabelSet])]
-    param (
-        [Parameter( Mandatory = $true )]
-        [URi]$apiURi,
-
-        [Parameter( Mandatory = $true )]
-        [PSCredential]$Credential,
-
-        [Parameter(
-            Position = 0,
-            ValueFromPipeline = $true,
-            ValueFromPipelineByPropertyName = $true
-        )]
-        [ValidateRange(1, [int]::MaxValue)]
+    param(
+        [Parameter( Mandatory, ValueFromPipeline )]
         [Alias('ID')]
-        [int[]]$PageID,
+        [AtlassianPS.ConfluencePS.Content[]]
+        $Content,
 
-        [Parameter(
-            Mandatory = $true,
-            ValueFromPipeline = $true,
-            ValueFromPipelineByPropertyName = $true
+        [Parameter( Mandatory )]
+        [AtlassianPS.ConfluencePS.Label[]]
+        $Label,
+
+        [Parameter()]
+        [ValidateNotNullOrEmpty()]
+        [ArgumentCompleter(
+            {
+                param($commandName, $parameterName, $wordToComplete, $commandAst, $fakeBoundParameter)
+                $command = Get-Command "Get-*ServerConfiguration" -Module AtlassianPS.Configuration
+                & $command.Name |
+                    Where-Object { $_.Type -eq [AtlassianPS.ServerType]"Confluence" } |
+                    Where-Object { $_.Name -like "$wordToComplete*" } |
+                    ForEach-Object { [System.Management.Automation.CompletionResult]::new( $_.Name, $_.Name, [System.Management.Automation.CompletionResultType]::ParameterValue, $_.Name ) }
+            }
         )]
-        [Alias('Labels')]
-        $Label
+        [String]
+        $ServerName = (Get-DefaultServer),
+
+        [Parameter()]
+        [System.Management.Automation.PSCredential]
+        [System.Management.Automation.Credential()]
+        $Credential = [System.Management.Automation.PSCredential]::Empty
     )
 
-    BEGIN {
-        Write-Verbose "[$($MyInvocation.MyCommand.Name)] Function started"
+    begin {
+        Write-Verbose "Function started"
 
-        $resourceApi = "$apiURi/content/{0}/label"
+        $resourceApi = "/rest/api/content/{0}/label"
     }
 
-    PROCESS {
-        Write-Debug "[$($MyInvocation.MyCommand.Name)] ParameterSetName: $($PsCmdlet.ParameterSetName)"
-        Write-Debug "[$($MyInvocation.MyCommand.Name)] PSBoundParameters: $($PSBoundParameters | Out-String)"
+    process {
+        Write-DebugMessage "ParameterSetName: $($PsCmdlet.ParameterSetName)"
+        Write-DebugMessage "PSBoundParameters: $($PSBoundParameters | Out-String)"
 
-        # Validade input object from Pipeline
-        if (($_) -and -not($_ -is [ConfluencePS.Page] -or $_ -is [int] -or $_ -is [ConfluencePS.ContentLabelSet])) {
-            $message = "The Object in the pipe is not a Page."
-            $exception = New-Object -TypeName System.ArgumentException -ArgumentList $message
-            Throw $exception
-        }
-
-        # The parameter "Label" has no type declared. Because of this, a piped object of
-        # type "ConfluencePS.ContentLabelSet" will be assigned to "Label". Lets fix this:
-        if ($_ -and $Label -is [ConfluencePS.ContentLabelSet]) {
-            $Label = $Label.Labels
-        }
-
-        # Test if Label is String[]
-        [String[]]$_label = $Label
-        $_label = $_label | Where-Object {$_ -ne "ConfluencePS.Label"}
-        if ($_label) {
-            [String[]]$Label = $_label
-        }
-        # Allow only for Label to be a [String[]] or [ConfluencePS.Label[]]
-        $allowedLabelTypes = @(
-            "System.String"
-            "System.String[]"
-            "ConfluencePS.Label"
-            "ConfluencePS.Label[]"
-        )
-        if ($Label.GetType().FullName -notin $allowedLabelTypes) {
-            $message = "Parameter 'Label' is not a Label or a String. It is $($Label.gettype().FullName)"
-            $exception = New-Object -TypeName System.ArgumentException -ArgumentList $message
-            Throw $exception
-        }
-
-        $iwParameters = @{
-            Uri        = ""
-            Method     = 'Post'
-            Body       = ""
-            OutputType = [ConfluencePS.Label]
-            Credential = $Credential
-        }
-
-        # Extract name if an Object is provided
-        if (($Label -is [ConfluencePS.Label]) -or $Label -is [ConfluencePS.Label[]]) {
-            $Label = $Label | Select-Object -ExpandProperty Name
-        }
-
-        foreach ($_page in $PageID) {
-            if ($_ -is [ConfluencePS.Page]) {
-                $InputObject = $_
-            }
-            elseif ($_ -is [ConfluencePS.ContentLabelSet]) {
-                $InputObject = $_.Page
-            }
-            else {
-                $InputObject = Get-Page -PageID $_page -ApiURi $apiURi -Credential $Credential
+        foreach ($_content in $Content) {
+            if ( -not (Get-Member -InputObject $_content -Name Id) -or -not ($_content.Id)) {
+                $writeErrorSplat = @{
+                    ExceptionType = "System.ApplicationException"
+                    Message       = "Content is missing the Id"
+                    ErrorId       = "AtlassianPS.ConfluencePS.MissingProperty"
+                    Category      = "InvalidData"
+                    Cmdlet        = $PSCmdlet
+                }
+                WriteError @writeErrorSplat
+                continue
             }
 
-            $iwParameters["Uri"] = $resourceApi -f $_page
-            $iwParameters["Body"] = ($Label | Foreach-Object {@{prefix = 'global'; name = $_}}) | ConvertTo-Json
+            $iwParameters = @{
+                Uri        = $resourceApi -f $_content.Id
+                ServerName = $ServerName
+                Method     = 'Post'
+                # need to create a new hashtable to have the correct case of the keys in the body
+                Body       = ConvertTo-Json ($Label | ForEach-Object {@{prefix = $_.Prefix; name = $_.Name}})
+                OutputType = [AtlassianPS.ConfluencePS.Label]
+                Credential = $Credential
+            }
 
-            Write-Debug "[$($MyInvocation.MyCommand.Name)] Content to be sent: $($iwParameters["Body"] | Out-String)"
-            If ($PSCmdlet.ShouldProcess("Label $Label, PageID $_page")) {
-                $output = [ConfluencePS.ContentLabelSet]@{ Page = $InputObject }
-                $output.Labels += (Invoke-Method @iwParameters)
-                $output
+            Write-DebugMessage "Invoking API Method with `$iwParameters" -BreakPoint
+            if ($PSCmdlet.ShouldProcess("contentId=[$($_content.Id)]", "Adding Label")) {
+                $_content.Labels = Invoke-Method @iwParameters
+
+                $_content
             }
         }
     }
 
     END {
-        Write-Verbose "[$($MyInvocation.MyCommand.Name)] Function ended"
+        Write-Verbose "Function ended"
     }
 }

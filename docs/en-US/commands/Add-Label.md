@@ -1,55 +1,56 @@
 ---
 external help file: ConfluencePS-help.xml
-online version: https://atlassianps.org/docs/ConfluencePS/commands/Add-Label/
-Module Name: ConfluencePS
-locale: en-US
-schema: 2.0.0
 layout: documentation
+locale: en-US
+Module Name: ConfluencePS
+online version: https://atlassianps.org/docs/ConfluencePS/commands/Add-Label/
 permalink: /docs/ConfluencePS/commands/Add-Label/
+schema: 2.0.0
 ---
 # Add-Label
 
 ## SYNOPSIS
 
-Add a new global label to an existing Confluence page.
+Add a new global label to an existing Confluence Content.
 
 ## SYNTAX
 
 ```powershell
-Add-ConfluenceLabel -apiURi <Uri> -Credential <PSCredential> [[-PageID] <Int32[]>] -Label <Object> [-WhatIf] [-Confirm]
+Add-ConfluenceLabel [-Content] <Content[]> [-Label <Label[]>] [-ServerName <String>]
+ [-Credential <PSCredential>] [-WhatIf] [-Confirm] [<CommonParameters>]
 ```
 
 ## DESCRIPTION
 
-Assign labels (one or more) to Confluence pages (one or more).
+Assign labels to a Confluence Content.
 
 If the label did not exist previously, it will be created.
 Preexisting labels are not affected.
 
 ## EXAMPLES
 
-### -------------------------- EXAMPLE 1 --------------------------
+### EXAMPLE 1
 
 ```powershell
-Add-ConfluenceLabel -PageID 123456 -Label alpha -Verbose
+Add-ConfluenceLabel -Content 123456 -Label alpha -Verbose
 ```
 
-Apply the label alpha to the wiki page with ID 123456.
+Apply the label alpha to the Content ID 123456.
 -Verbose output provides extra technical details, if interested.
 
-### -------------------------- EXAMPLE 2 --------------------------
+### EXAMPLE 2
 
 ```powershell
-Get-ConfluencePage -SpaceKey SRV | Add-ConfluenceLabel -Label servers -WhatIf
+Get-ConfluencePage -Space SRV | Add-ConfluenceLabel -Label servers -WhatIf
 ```
 
 Simulates applying the label "servers" to all pages in the space with key SRV.
 -WhatIf provides PageIDs of pages that would have been affected.
 
-### -------------------------- EXAMPLE 3 --------------------------
+### EXAMPLE 3
 
 ```powershell
-Get-ConfluencePage -SpaceKey DEMO | Add-ConfluenceLabel -Label abc -Confirm
+Get-ConfluencePage -Space DEMO | Add-ConfluenceLabel -Label abc -Confirm
 ```
 
 Applies the label "abc" to all pages in the space with key DEMO.
@@ -57,54 +58,24 @@ Applies the label "abc" to all pages in the space with key DEMO.
 
 ## PARAMETERS
 
-### -apiURi
+### -Content
 
-The URi of the API interface.
-Value can be set persistently with Set-Info.
-
-```yaml
-Type: Uri
-Parameter Sets: (All)
-Aliases:
-
-Required: True
-Position: Named
-Default value: None
-Accept pipeline input: False
-Accept wildcard characters: False
-```
-
-### -Credential
-
-Confluence's credentials for authentication.
-Value can be set persistently with Set-ConfluenceInfo.
-
-```yaml
-Type: PSCredential
-Parameter Sets: (All)
-Aliases:
-
-Required: True
-Position: Named
-Default value: None
-Accept pipeline input: False
-Accept wildcard characters: False
-```
-
-### -PageID
-
-The ID of the page to which apply the label to.
+The ID of the Content to which apply the Attachment to.
 Accepts multiple IDs, including via pipeline input.
 
+> This parameter takes Content objects as input.
+> But a String or Integer can also be passed.
+> This will be used as "Id" for the space.
+
 ```yaml
-Type: Int32[]
+Type: Content[]
 Parameter Sets: (All)
 Aliases: ID
 
-Required: False
-Position: 1
+Required: True
+Position: 0
 Default value: None
-Accept pipeline input: True (ByPropertyName, ByValue)
+Accept pipeline input: True (ByValue)
 Accept wildcard characters: False
 ```
 
@@ -114,20 +85,21 @@ One or more labels to be added.
 Currently only supports labels of prefix "global".
 
 ```yaml
-Type: Object
+Type: Label[]
 Parameter Sets: (All)
 Aliases: Labels
 
 Required: True
 Position: Named
 Default value: None
-Accept pipeline input: True (ByPropertyName, ByValue)
+Accept pipeline input: False
 Accept wildcard characters: False
 ```
 
 ### -WhatIf
 
 Shows what would happen if the cmdlet runs.
+
 The cmdlet is not run.
 
 ```yaml
@@ -158,14 +130,73 @@ Accept pipeline input: False
 Accept wildcard characters: False
 ```
 
+### -ServerName
+
+Name of the server registered in AtlassianPS.Configuration.
+
+This parameter supports tab-completion.
+
+> More information on how to authenticate in [about_ConfluencePS_Authentication](../../about/authentication.html)
+
+```yaml
+Type: String
+Parameter Sets: (All)
+Aliases:
+
+Required: False
+Position: Named
+Default value: None
+Accept pipeline input: True (ByValue)
+Accept wildcard characters: False
+```
+
+### -Credential
+
+Confluence's credentials for authentication.
+
+> More information on how to authenticate in [about_ConfluencePS_Authentication](../../about/authentication.html)
+
+```yaml
+Type: PSCredential
+Parameter Sets: (All)
+Aliases:
+
+Required: False
+Position: Named
+Default value: None
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### CommonParameters
+
+This cmdlet supports the common parameters: `-Debug`, `-ErrorAction`,
+`-ErrorVariable`, `-InformationAction`, `-InformationVariable`, `-OutVariable`,
+`-OutBuffer`, `-PipelineVariable`, `-Verbose`, `-WarningAction`, and
+`-WarningVariable`.
+For more information, see about_CommonParameters
+(<http://go.microsoft.com/fwlink/?LinkID=113216>).
+
 ## INPUTS
+
+### AtlassianPS.ConfluencePS.BlogPost
+
+### AtlassianPS.ConfluencePS.Content
+
+### AtlassianPS.ConfluencePS.Page
 
 ## OUTPUTS
 
-### ConfluencePS.ContentLabelSet
+### AtlassianPS.ConfluencePS.Content
 
 ## NOTES
 
 ## RELATED LINKS
 
-[https://github.com/AtlassianPS/ConfluencePS](https://github.com/AtlassianPS/ConfluencePS)
+[Get-ConfluenceBlogPost](../Get-ConfluenceBlogPost)
+
+[Get-ConfluenceLabel](../Get-ConfluenceLabel)
+
+[Get-ConfluencePage](../Get-ConfluencePage)
+
+[Remove-ConfluenceLabel](../Remove-ConfluenceLabel)

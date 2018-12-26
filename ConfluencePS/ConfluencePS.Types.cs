@@ -98,6 +98,8 @@ namespace AtlassianPS
                 Name = _Name;
             }
 
+            public Label() {}
+
             public UInt32 ID { get; set; }
             public String Prefix { get; set; }
             public String Name { get; set; }
