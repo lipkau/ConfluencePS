@@ -48,9 +48,9 @@ Describe "Add-Attachment" -Tag Unit {
 
         $command = Get-Command -Name Add-ConfluenceAttachment
 
-        It "has a [AtlassianPS.ConfluencePS.Page] -Page parameter" {
-            $command.Parameters.ContainsKey("Page")
-            $command.Parameters["Page"].ParameterType | Should -Be "AtlassianPS.ConfluencePS.Page"
+        It "has a [AtlassianPS.ConfluencePS.Content] -Content parameter" {
+            $command.Parameters.ContainsKey("Content")
+            $command.Parameters["Content"].ParameterType | Should -Be "AtlassianPS.ConfluencePS.Content"
         }
 
         It "has a [String[]] -Path parameter" {
@@ -82,7 +82,7 @@ Describe "Add-Attachment" -Tag Unit {
         #endregion Arrange
 
         It "uploads a file to a Page" {
-            Add-ConfluenceAttachment -Page 123 -Path "TestDrive:/file.txt"
+            Add-ConfluenceAttachment -Content 123 -Path "TestDrive:/file.txt"
 
             $assertMockCalledSplat = @{
                 CommandName     = "Invoke-Method"
@@ -121,6 +121,8 @@ Describe "Add-Attachment" -Tag Unit {
         }
         $null = New-Item -Path "TestDrive:/folder" -ItemType Directory
         $null = New-Item -Path "TestDrive:/file.txt" -ItemType File
+        $blogpost = [AtlassianPS.ConfluencePS.BlogPost]@{Id = 123}
+        $content = [AtlassianPS.ConfluencePS.Content]@{Id = 123}
         $page = [AtlassianPS.ConfluencePS.Page]@{Id = 123}
         $invalidPage = [AtlassianPS.ConfluencePS.Page]@{Title = "Foo"}
         #endregion Arrange
@@ -142,44 +144,60 @@ Describe "Add-Attachment" -Tag Unit {
             $completion.CompletionText | Should -Contain "lorem"
         }
 
-        It "accepts a [String] as input for -Page" {
-            { Add-ConfluenceAttachment -Page "123" -Path "TestDrive:/file.txt" } | Should -Not -Throw
+        It "accepts a [String] as input for -Content" {
+            { Add-ConfluenceAttachment -Content "123" -Path "TestDrive:/file.txt" } | Should -Not -Throw
         }
 
-        It "accepts a [Int] as input for -Page" {
-            { Add-ConfluenceAttachment -Page 123 -Path "TestDrive:/file.txt" } | Should -Not -Throw
+        It "accepts a [Int] as input for -Content" {
+            { Add-ConfluenceAttachment -Content 123 -Path "TestDrive:/file.txt" } | Should -Not -Throw
         }
 
-        It "accepts a [Int] as input for -Page over the pipeline" {
+        It "accepts a [Int] as input for -Content over the pipeline" {
             { 123 | Add-ConfluenceAttachment -Path "TestDrive:/file.txt" } | Should -Not -Throw
         }
 
-        It "accepts a [AtlassianPS.ConfluencePS.Page] as input for -Page" {
-            { Add-ConfluenceAttachment -Page $page -Path "TestDrive:/file.txt" } | Should -Not -Throw
+        It "accepts a [AtlassianPS.ConfluencePS.BlogPost] as input for -Content" {
+            { Add-ConfluenceAttachment -Content $blogpost -Path "TestDrive:/file.txt" } | Should -Not -Throw
         }
 
-        It "accepts a [AtlassianPS.ConfluencePS.Page] as input for -Page over the pipeline" {
+        It "accepts a [AtlassianPS.ConfluencePS.Content] as input for -Content" {
+            { Add-ConfluenceAttachment -Content $content -Path "TestDrive:/file.txt" } | Should -Not -Throw
+        }
+
+        It "accepts a [AtlassianPS.ConfluencePS.Page] as input for -Content" {
+            { Add-ConfluenceAttachment -Content $page -Path "TestDrive:/file.txt" } | Should -Not -Throw
+        }
+
+        It "accepts a [AtlassianPS.ConfluencePS.BlogPost] as input for -Content over the pipeline" {
+            { $blogpost | Add-ConfluenceAttachment -Path "TestDrive:/file.txt" } | Should -Not -Throw
+        }
+
+        It "accepts a [AtlassianPS.ConfluencePS.Content] as input for -Content over the pipeline" {
+            { $content | Add-ConfluenceAttachment -Path "TestDrive:/file.txt" } | Should -Not -Throw
+        }
+
+        It "accepts a [AtlassianPS.ConfluencePS.Page] as input for -Content over the pipeline" {
             { $page | Add-ConfluenceAttachment -Path "TestDrive:/file.txt" } | Should -Not -Throw
         }
 
         It "accepts a [String] as input for -Path over the pipeline" {
-            { "TestDrive:/file.txt" | Add-ConfluenceAttachment -Page 123 } | Should -Not -Throw
+            { "TestDrive:/file.txt" | Add-ConfluenceAttachment -Content 123 } | Should -Not -Throw
         }
 
         It "writes an error when an incomplete [AtlassianPS.ConfluencePS.Page] object is provided" {
-            { Add-ConfluenceAttachment -Page $invalidPage -Path "TestDrive:/file.txt" -ErrorAction Stop } | Should -Throw "Page is missing the Id"
-            { Add-ConfluenceAttachment -Page $invalidPage -Path "TestDrive:/file.txt" -ErrorAction SilentlyContinue } | Should -Not -Throw
+            { Add-ConfluenceAttachment -Content $invalidPage -Path "TestDrive:/file.txt" -ErrorAction Stop } | Should -Throw "Content is missing the Id"
+            { Add-ConfluenceAttachment -Content $invalidPage -Path "TestDrive:/file.txt" -ErrorAction SilentlyContinue } | Should -Not -Throw
         }
 
         It "throws a terminating error if the path is not a file and exists" {
-            { Add-ConfluenceAttachment -Page $page -Path "TestDrive:\" } | Should -Throw "File not found"
+            { Add-ConfluenceAttachment -Content $page -Path "TestDrive:\" } | Should -Throw "File not found"
 
-            { Add-ConfluenceAttachment -Page $page -Path "TestDrive:\folder" } | Should -Throw "File not found"
+            { Add-ConfluenceAttachment -Content $page -Path "TestDrive:\folder" } | Should -Throw "File not found"
 
-            { Add-ConfluenceAttachment -Page $page -Path "TestDrive:\newfile.txt" } | Should -Throw "File not found"
+            { Add-ConfluenceAttachment -Content $page -Path "TestDrive:\newfile.txt" } | Should -Throw "File not found"
 
             $null = New-Item -Path "TestDrive:/newfile.txt" -ItemType File
-            { Add-ConfluenceAttachment -Page $page -Path "TestDrive:\newfile.txt" } | Should -Not -Throw
+            { Add-ConfluenceAttachment -Content $page -Path "TestDrive:\newfile.txt" } | Should -Not -Throw
         }
     }
 }

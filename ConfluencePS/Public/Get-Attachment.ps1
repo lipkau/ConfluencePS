@@ -5,8 +5,8 @@ function Get-Attachment {
     param(
         [Parameter( Mandatory, ValueFromPipeline )]
         [Alias('ID')]
-        [AtlassianPS.ConfluencePS.Page[]]
-        $Page,
+        [AtlassianPS.ConfluencePS.Content[]]
+        $Content,
 
         [String]$FileNameFilter,
 
@@ -46,8 +46,8 @@ function Get-Attachment {
         Write-DebugMessage "ParameterSetName: $($PsCmdlet.ParameterSetName)"
         Write-DebugMessage "PSBoundParameters: $($PSBoundParameters | Out-String)"
 
-        foreach ($_page in $Page) {
-            if ( -not (Get-Member -InputObject $_page -Name Id) -or -not ($_page.Id)) {
+        foreach ($_content in $Content) {
+            if ( -not (Get-Member -InputObject $_content -Name Id) -or -not ($_content.Id)) {
                 $writeErrorSplat = @{
                     ExceptionType = "System.ApplicationException"
                     Message       = "Page is missing the Id"
@@ -60,7 +60,7 @@ function Get-Attachment {
             }
 
             $iwParameters = @{
-                Uri          = $resourceApi -f $_page.Id
+                Uri          = $resourceApi -f $_content.Id
                 ServerName   = $ServerName
                 Method       = 'Get'
                 GetParameter = @{

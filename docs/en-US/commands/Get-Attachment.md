@@ -11,12 +11,12 @@ schema: 2.0.0
 
 ## SYNOPSIS
 
-Retrieve the child Attachments of a given wiki Page.
+Retrieve the child Attachments of a given wiki Content.
 
 ## SYNTAX
 
 ```powershell
-Get-ConfluenceAttachment [-Page] <Page[]> [-FileNameFilter <String>]
+Get-ConfluenceAttachment [-Content] <Content[]> [-FileNameFilter <String>]
  [-MediaTypeFilter <String>] [-PageSize <UInt32>] [-ServerName <String>]
  [-Credential <PSCredential>] [-IncludeTotalCount] [-Skip <UInt64>] [-First <UInt64>]
  [<CommonParameters>]
@@ -24,54 +24,59 @@ Get-ConfluenceAttachment [-Page] <Page[]> [-FileNameFilter <String>]
 
 ## DESCRIPTION
 
-Return all Attachments directly below the given Page.
+Return all Attachments directly below the given Content.
 
 ## EXAMPLES
 
 ### EXAMPLE 1
 
 ```powershell
-Get-ConfluenceAttachment -Page 123456
+Get-ConfluenceAttachment -Content 123456
 Get-ConfluencePage -Page 123456 | Get-ConfluenceAttachment
 ```
 
-Two different methods to return all Attachments directly below Page 123456.
+Two different methods to return all Attachments directly below Content 123456.
 Both examples should return identical results.
 
 ### EXAMPLE 2
 
 ```powershell
-Get-ConfluenceAttachment -Page 123456, 234567
+Get-ConfluenceAttachment -Content 123456, 234567
 Get-ConfluencePage -Page 123456, 234567 | Get-ConfluenceAttachment
 ```
 
-Similar to the previous example, this shows two different methods to return the Attachments of multiple pages.
+Similar to the previous example, this shows two different methods to return
+the Attachments of multiple pages.
 Both examples should return identical results.
 
 ### EXAMPLE 3
 
 ```powershell
-Get-ConfluenceAttachment -Page 123456 -FileNameFilter "test.png"
+Get-ConfluenceAttachment -Content 123456 -FileNameFilter "test.png"
 ```
 
-Returns the Attachment called test.png from Page 123456 if it exists.
+Returns the Attachment called test.png from Content 123456 if it exists.
 
 ### EXAMPLE 4
 
 ```powershell
-Get-ConfluenceAttachment -Page 123456 -MediaTypeFilter "image/png"
+Get-ConfluenceAttachment -Content 123456 -MediaTypeFilter "image/png"
 ```
 
-Returns any attachments of mime type image/png from Page 123456.
+Returns any attachments of mime type image/png from Content 123456.
 
 ## PARAMETERS
 
-### -Page
+### -Content
 
-Return attachments for a list of page IDs.
+Identifies the Content to be looked up.
+
+> This parameter takes Content objects as input.
+> But a String or Integer can also be passed.
+> This will be used as "Id" for the Content.
 
 ```yaml
-Type: Page[]
+Type: Content[]
 Parameter Sets: (All)
 Aliases:
 

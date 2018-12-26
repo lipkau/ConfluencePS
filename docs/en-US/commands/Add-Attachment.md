@@ -11,18 +11,19 @@ schema: 2.0.0
 
 ## SYNOPSIS
 
-Add a new attachment to an existing Confluence page.
+Add a new attachment to an existing Confluence Content.
 
 ## SYNTAX
 
 ```powershell
-Add-ConfluenceAttachment [-Page] <Page> [-Path <String[]>] [-ServerName <String>]
- [-Credential <PSCredential>] [-WhatIf] [-Confirm] [<CommonParameters>]
+Add-ConfluenceAttachment [-Content] <Content> [-Path <String[]>]
+ [-ServerName <String>] [-Credential <PSCredential>] [-WhatIf] [-Confirm]
+ [<CommonParameters>]
 ```
 
 ## DESCRIPTION
 
-Add Attachments to a Confluence page.
+Add Attachments to a Confluence Content.
 If the Attachment did not exist previously, it will be created.
 
 This will not update an already existing Attachment.
@@ -34,10 +35,10 @@ This will not update an already existing Attachment.
 ### EXAMPLE 1
 
 ```powershell
-Add-ConfluenceAttachment -Page 123456 -FilePath test.png
+Add-ConfluenceAttachment -Content 123456 -FilePath test.png
 ```
 
-Adds the Attachment test.png to the wiki page with ID 123456.
+Adds the Attachment test.png to the wiki Content with ID 123456.
 
 ### EXAMPLE 2
 
@@ -50,17 +51,17 @@ Simulates adding the file `test.png` to all pages in the space with key SRV.
 
 ## PARAMETERS
 
-### -Page
+### -Content
 
-The ID of the page to which apply the Attachment to.
+The ID of the Content to which apply the Attachment to.
 Accepts multiple IDs, including via pipeline input.
 
-> This parameter takes Page objects as input.
+> This parameter takes Content objects as input.
 > But a String or Integer can also be passed.
 > This will be used as "Id" for the space.
 
 ```yaml
-Type: Page
+Type: Content
 Parameter Sets: (All)
 Aliases: ID
 
@@ -172,6 +173,10 @@ For more information, see about_CommonParameters
 
 ### System.String
 
+### AtlassianPS.ConfluencePS.BlogPost
+
+### AtlassianPS.ConfluencePS.Content
+
 ### AtlassianPS.ConfluencePS.Page
 
 ## OUTPUTS
@@ -181,6 +186,8 @@ For more information, see about_CommonParameters
 ## NOTES
 
 ## RELATED LINKS
+
+[Get-ConfluenceBlogPost](../Get-ConfluenceBlogPost)
 
 [Get-ConfluencePage](../Get-ConfluencePage)
 

@@ -5,8 +5,8 @@ function Add-Attachment {
     param(
         [Parameter( Mandatory, ValueFromPipeline )]
         [Alias('ID')]
-        [AtlassianPS.ConfluencePS.Page]
-        $Page,
+        [AtlassianPS.ConfluencePS.Content]
+        $Content,
 
         [Parameter( Mandatory, ValueFromPipeline, ValueFromPipelineByPropertyName )]
         [ValidateScript(
@@ -61,10 +61,10 @@ function Add-Attachment {
         Write-DebugMessage "ParameterSetName: $($PsCmdlet.ParameterSetName)"
         Write-DebugMessage "PSBoundParameters: $($PSBoundParameters | Out-String)"
 
-        if ( -not (Get-Member -InputObject $Page -Name Id) -or -not ($Page.Id)) {
+        if ( -not (Get-Member -InputObject $Content -Name Id) -or -not ($Content.Id)) {
             $writeErrorSplat = @{
                 ExceptionType = "System.ApplicationException"
-                Message       = "Page is missing the Id"
+                Message       = "Content is missing the Id"
                 ErrorId       = "AtlassianPS.ConfluencePS.MissingProperty"
                 Category      = "InvalidData"
                 Cmdlet        = $PSCmdlet
@@ -75,7 +75,7 @@ function Add-Attachment {
 
         foreach ($_path in $Path) {
             $iwParameters = @{
-                URI        = $resourceApi -f $Page.Id
+                URI        = $resourceApi -f $Content.Id
                 ServerName = $ServerName
                 Method     = 'Post'
                 InFile     = $_path
@@ -85,7 +85,7 @@ function Add-Attachment {
             }
 
             Write-DebugMessage "Invoking API Method with `$iwParameters" -BreakPoint
-            if ($PSCmdlet.ShouldProcess("pageid=[$($Page.ID)]", "Adding Attachment(s)")) {
+            if ($PSCmdlet.ShouldProcess("contentId=[$($Content.ID)]", "Adding Attachment(s)")) {
                 Invoke-Method @iwParameters
             }
         }

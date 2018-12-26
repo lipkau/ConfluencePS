@@ -48,9 +48,9 @@ Describe "Get-Attachment" -Tag Unit {
 
         $command = Get-Command -Name Get-ConfluenceAttachment
 
-        It "has a [AtlassianPS.ConfluencePS.Page[]] -Page parameter" {
-            $command.Parameters.ContainsKey("Page")
-            $command.Parameters["Page"].ParameterType | Should -Be "AtlassianPS.ConfluencePS.Page[]"
+        It "has a [AtlassianPS.ConfluencePS.Content[]] -Content parameter" {
+            $command.Parameters.ContainsKey("Content")
+            $command.Parameters["Content"].ParameterType | Should -Be "AtlassianPS.ConfluencePS.Content[]"
         }
 
         It "has a [String] -FileNameFilter parameter" {
@@ -88,7 +88,7 @@ Describe "Get-Attachment" -Tag Unit {
     Context "Behavior checking" {
 
         It "fetches attachments of a page" {
-            Get-ConfluenceAttachment -Page 123
+            Get-ConfluenceAttachment -Content 123
 
             $assertMockCalledSplat = @{
                 CommandName     = "Invoke-Method"
@@ -104,7 +104,7 @@ Describe "Get-Attachment" -Tag Unit {
         }
 
         It "fetches attachments of a page filtered by file name" {
-            Get-ConfluenceAttachment -Page 123 -FileNameFilter "file.txt"
+            Get-ConfluenceAttachment -Content 123 -FileNameFilter "file.txt"
 
             $assertMockCalledSplat = @{
                 CommandName     = "Invoke-Method"
@@ -122,7 +122,7 @@ Describe "Get-Attachment" -Tag Unit {
 
         It "fetches attachments of a page filtered by media type" {
             Mock Invoke-Method -ModuleName $env:BHProjectName { Write-Host "Get Parameter: $GetParameter" }
-            Get-ConfluenceAttachment -Page 123 -MediaTypeFilter "image/png"
+            Get-ConfluenceAttachment -Content 123 -MediaTypeFilter "image/png"
 
             $assertMockCalledSplat = @{
                 CommandName     = "Invoke-Method"
@@ -139,7 +139,7 @@ Describe "Get-Attachment" -Tag Unit {
         }
 
         It "fetches attachments of a page filtered by media type and file name" {
-            Get-ConfluenceAttachment -Page 123 -MediaTypeFilter "image/png" -FileNameFilter "file.txt"
+            Get-ConfluenceAttachment -Content 123 -MediaTypeFilter "image/png" -FileNameFilter "file.txt"
 
             $assertMockCalledSplat = @{
                 CommandName     = "Invoke-Method"
@@ -157,7 +157,7 @@ Describe "Get-Attachment" -Tag Unit {
         }
 
         It "returns [AtlassianPS.ConfluencePS.Attachment] objects" {
-            Get-ConfluenceAttachment -Page 123
+            Get-ConfluenceAttachment -Content 123
 
             $assertMockCalledSplat = @{
                 CommandName     = "Invoke-Method"
@@ -194,16 +194,18 @@ Describe "Get-Attachment" -Tag Unit {
                 Save-Configuration
             }
         }
+        $blogpost = [AtlassianPS.ConfluencePS.BlogPost]@{Id = 123}
+        $content = [AtlassianPS.ConfluencePS.Content]@{Id = 123}
         $page = [AtlassianPS.ConfluencePS.Page]@{Id = 123}
         $invalidPage = [AtlassianPS.ConfluencePS.Page]@{Title = "Foo"}
         #endregion Arrange
 
         It "does not allow an empty ServerName" {
-            { Get-ConfluenceAttachment -Page 123 -ServerName "" } | Should -Throw
+            { Get-ConfluenceAttachment -Content 123 -ServerName "" } | Should -Throw
         }
 
         It "does not allow a null ServerName" {
-            { Get-ConfluenceAttachment -Page 123 -ServerName $null } | Should -Throw
+            { Get-ConfluenceAttachment -Content 123 -ServerName $null } | Should -Throw
         }
 
         It "completes ServerName arguments" {
@@ -216,8 +218,8 @@ Describe "Get-Attachment" -Tag Unit {
         }
 
         It "uses the `$PageSize when fetching results" {
-            Get-ConfluenceAttachment -Page 123
-            Get-ConfluenceAttachment -Page 123 -PageSize 5
+            Get-ConfluenceAttachment -Content 123
+            Get-ConfluenceAttachment -Content 123 -PageSize 5
 
             $assertMockCalledSplat = @{
                 CommandName     = "Invoke-Method"
@@ -233,33 +235,49 @@ Describe "Get-Attachment" -Tag Unit {
             Assert-MockCalled @assertMockCalledSplat
         }
 
-        It "accepts a [String] as input for -Page" {
-            { Get-ConfluenceAttachment -Page "123" } | Should -Not -Throw
+        It "accepts a [String] as input for -Content" {
+            { Get-ConfluenceAttachment -Content "123" } | Should -Not -Throw
         }
 
-        It "accepts a [String] as input for -Page over the pipeline" {
+        It "accepts a [String] as input for -Content over the pipeline" {
             { "123" | Get-ConfluenceAttachment } | Should -Not -Throw
         }
 
-        It "accepts a [Int] as input for -Page" {
-            { Get-ConfluenceAttachment -Page 123 } | Should -Not -Throw
+        It "accepts a [Int] as input for -Content" {
+            { Get-ConfluenceAttachment -Content 123 } | Should -Not -Throw
         }
 
-        It "accepts a [Int] as input for -Page over the pipeline" {
+        It "accepts a [Int] as input for -Content over the pipeline" {
             { 123 | Get-ConfluenceAttachment } | Should -Not -Throw
         }
 
-        It "accepts a [AtlassianPS.ConfluencePS.Page] as input for -Page" {
-            { Get-ConfluenceAttachment -Page $page } | Should -Not -Throw
+        It "accepts a [AtlassianPS.ConfluencePS.BlogPost] as input for -Content" {
+            { Get-ConfluenceAttachment -Content $blogpost } | Should -Not -Throw
         }
 
-        It "accepts a [AtlassianPS.ConfluencePS.Page] as input for -Page over the pipeline" {
+        It "accepts a [AtlassianPS.ConfluencePS.Content] as input for -Content" {
+            { Get-ConfluenceAttachment -Content $content } | Should -Not -Throw
+        }
+
+        It "accepts a [AtlassianPS.ConfluencePS.Page] as input for -Content" {
+            { Get-ConfluenceAttachment -Content $page } | Should -Not -Throw
+        }
+
+        It "accepts a [AtlassianPS.ConfluencePS.BlogPost] as input for -Content over the pipeline" {
+            { $blogpost | Get-ConfluenceAttachment } | Should -Not -Throw
+        }
+
+        It "accepts a [AtlassianPS.ConfluencePS.Content] as input for -Content over the pipeline" {
+            { $content | Get-ConfluenceAttachment } | Should -Not -Throw
+        }
+
+        It "accepts a [AtlassianPS.ConfluencePS.Page] as input for -Content over the pipeline" {
             { $page | Get-ConfluenceAttachment } | Should -Not -Throw
         }
 
         It "writes an error when an incomplete [AtlassianPS.ConfluencePS.Page] object is provided" {
-            { Get-ConfluenceAttachment -Page $invalidPage -ErrorAction Stop } | Should -Throw "Page is missing the Id"
-            { Get-ConfluenceAttachment -Page $invalidPage -ErrorAction SilentlyContinue } | Should -Not -Throw
+            { Get-ConfluenceAttachment -Content $invalidPage -ErrorAction Stop } | Should -Throw "Page is missing the Id"
+            { Get-ConfluenceAttachment -Content $invalidPage -ErrorAction SilentlyContinue } | Should -Not -Throw
         }
     }
 }
