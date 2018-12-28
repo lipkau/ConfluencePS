@@ -18,8 +18,10 @@ function ConvertTo-User {
             [ConfluencePS.User](ConvertTo-Hashtable -InputObject ($object | Select-Object `
                 username,
                 userKey,
+                accountId,
                 @{Name = "profilePicture"; Expression = { ConvertTo-Icon $_.profilePicture }},
                 displayname
+                # @{Name = "Details"; Expression = { (ConvertTo-Hashtable $_.details) }},
             ))
         }
     }

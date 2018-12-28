@@ -20,7 +20,9 @@ namespace ConfluencePS
 		public String UserName { get; set; }
 		public String DisplayName { get; set; }
 		public String UserKey { get; set; }
+		public String AccountID { get; set; }
 		public Icon ProfilePicture { get; set; }
+		// public Hashtable Details { get; set; }
 		public override string ToString() {
 			return UserName;
 		}

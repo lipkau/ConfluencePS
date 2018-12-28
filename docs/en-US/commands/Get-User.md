@@ -15,16 +15,28 @@ Retrieve a listing of Users in your Confluence instance.
 
 ## SYNTAX
 
-### byUsername (Default)
+### _self (Default)
 
 ```powershell
-Get-ConfluenceUser -ApiURi <uri> -Credential <pscredential> -Username <string> [-IncludeTotalCount] [-Skip <uint64>] [-First <uint64>]  [<CommonParameters>]
+Get-ConfluenceUser -apiURi <Uri> -Credential <PSCredential>
+```
+
+### byUsername
+
+```powershell
+Get-ConfluenceUser -ApiURi <uri> -Credential <PSCredential> -Username <string> [-IncludeTotalCount] [-Skip <UInt64>] [-First <UInt64>]  [<CommonParameters>]
+```
+
+### byAccount
+
+```powershell
+Get-ConfluenceUser -apiURi <Uri> -Credential <PSCredential> -AccountId <String> [-IncludeTotalCount] [-Skip <UInt64>] [-First <UInt64>]  [<CommonParameters>]
 ```
 
 ### byUserKey
 
 ```powershell
-Get-ConfluenceUser -ApiURi <uri> -Credential <pscredential> -UserKey <string> [-IncludeTotalCount] [-Skip <uint64>] [-First <uint64>]  [<CommonParameters>]
+Get-ConfluenceUser -ApiURi <uri> -Credential <PSCredential> -UserKey <string> [-IncludeTotalCount] [-Skip <UInt64>] [-First <UInt64>]  [<CommonParameters>]
 ```
 
 ## DESCRIPTION
@@ -36,18 +48,40 @@ Return Confluence Users, filtered by Username, or Key.
 ### -------------------------- EXAMPLE 1 --------------------------
 
 ```powershell
+Get-ConfluenceUser
+```
+
+Returns information about the user executing the command.
+
+### -------------------------- EXAMPLE 2 --------------------------
+
+```powershell
 Get-ConfluenceUser -Username 'myUser'
 ```
 
 Returns a user by name.
 
-### -------------------------- EXAMPLE 2 --------------------------
+### -------------------------- EXAMPLE 3 --------------------------
 
 ```powershell
 Get-ConfluenceUser -UserKey 123456
 ```
 
 Returns the user with ID 123456.
+
+### -------------------------- EXAMPLE 4 --------------------------
+
+```powershell
+Get-ConfluenceUser -AccountId "557058:15b2a9f1-1893-42b3-a6b5-ab899c878d00"
+```
+
+Description
+
+-----------
+
+Fetch the account information of the user searching by `AccountId`.
+
+This is useful for cloud servers.
 
 ## PARAMETERS
 
@@ -101,6 +135,24 @@ Accept pipeline input: False
 Accept wildcard characters: False
 ```
 
+### -AccountId
+The accountId of the user to be returned.
+The accountId uniquely identifies a user across all Atlassian products.
+
+This is only available for cloud instances.
+
+```yaml
+Type: String
+Parameter Sets: byAccount
+Aliases: Id
+
+Required: True
+Position: 1
+Default value: None
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
 ### -Username
 
 Filter results by Username (case-insensitive).
@@ -118,8 +170,6 @@ Accept wildcard characters: False
 ```
 
 ## INPUTS
-
-None
 
 ## OUTPUTS
 
