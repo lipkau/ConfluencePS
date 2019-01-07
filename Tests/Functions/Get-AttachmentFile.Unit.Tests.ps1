@@ -177,9 +177,9 @@ Describe "Get-AttachmentFile" -Tag Unit {
             { Get-ConfluenceAttachmentFile -Attachment $invalidAttachment1 -ErrorAction Stop } | Should -Throw "Attachment is missing the Filename"
             { Get-ConfluenceAttachmentFile -Attachment $invalidAttachment2 -ErrorAction Stop } | Should -Throw "Attachment is missing the MediaType"
             { Get-ConfluenceAttachmentFile -Attachment $invalidAttachment3 -ErrorAction Stop } | Should -Throw "Attachment is missing the URL"
-            { Get-ConfluenceAttachmentFile -Attachment $invalidAttachment1 -ErrorAction SilentlyContinue } | Should -Not -Throw
-            { Get-ConfluenceAttachmentFile -Attachment $invalidAttachment2 -ErrorAction SilentlyContinue } | Should -Not -Throw
-            { Get-ConfluenceAttachmentFile -Attachment $invalidAttachment3 -ErrorAction SilentlyContinue } | Should -Not -Throw
+            Get-ConfluenceAttachmentFile -Attachment $invalidAttachment1 -ErrorAction SilentlyContinue
+            Get-ConfluenceAttachmentFile -Attachment $invalidAttachment2 -ErrorAction SilentlyContinue
+            Get-ConfluenceAttachmentFile -Attachment $invalidAttachment3 -ErrorAction SilentlyContinue
         }
 
         It "throws a terminating error if the path is invalid" {

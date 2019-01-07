@@ -130,8 +130,8 @@ Describe "ConvertTo-StorageFormat" -Tag Unit {
         }
 
         It "accepts a [String] as input for -Content" {
-            { ConvertTo-ConfluenceStorageFormat -Content "foo" } | Should -Not -Throw
-            { ConvertTo-ConfluenceStorageFormat -Content "foo", "bar" } | Should -Not -Throw
+            ConvertTo-ConfluenceStorageFormat -Content "foo"
+            ConvertTo-ConfluenceStorageFormat -Content "foo", "bar"
 
             $assertMockCalledSplat = @{
                 CommandName     = "Invoke-Method"
@@ -147,7 +147,7 @@ Describe "ConvertTo-StorageFormat" -Tag Unit {
         }
 
         It "accepts a [String] as input for -Content over the pipeline" {
-            { "foo", "bar" | ConvertTo-ConfluenceStorageFormat } | Should -Not -Throw
+            "foo", "bar" | ConvertTo-ConfluenceStorageFormat
 
             $assertMockCalledSplat = @{
                 CommandName     = "Invoke-Method"

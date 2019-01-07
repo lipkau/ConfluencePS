@@ -324,7 +324,7 @@ Describe "Get-Content" -Tag Unit {
             }
 
             It "fetches blogposts by the date they were posted" {
-                Get-Content -ContentType "blogpost" -PostingDay (Get-Date "01.31.2000")
+                Get-Content -ContentType "blogpost" -PostingDay (Get-Date -Year 2000 -Month 01 -Day 31)
 
                 $assertMockCalledSplat = @{
                     CommandName     = "Invoke-Method"
@@ -474,39 +474,39 @@ Describe "Get-Content" -Tag Unit {
             }
 
             It "accepts a [String] as input for -Content" {
-                { Get-Content -Content "123" } | Should -Not -Throw
+                Get-Content -Content "123"
             }
 
             It "accepts a [String] as input for -Content over the pipeline" {
-                { "123" | Get-Content } | Should -Not -Throw
+                "123" | Get-Content
             }
 
             It "accepts a [Int] as input for -Content" {
-                { Get-Content -Content 123 } | Should -Not -Throw
+                Get-Content -Content 123
             }
 
             It "accepts a [Int] as input for -Content over the pipeline" {
-                { 123 | Get-Content } | Should -Not -Throw
+                123 | Get-Content
             }
 
             It "accepts a [AtlassianPS.ConfluencePS.Content] as input for -Content" {
-                { Get-Content -Content $page } | Should -Not -Throw
-                { Get-Content -Content $blogpost } | Should -Not -Throw
-                { Get-Content -Content $Content } | Should -Not -Throw
+                Get-Content -Content $page
+                Get-Content -Content $blogpost
+                Get-Content -Content $Content
             }
 
             It "accepts a [AtlassianPS.ConfluencePS.Content] as input for -Page over the pipeline" {
-                { $page | Get-Content } | Should -Not -Throw
-                { $blogpost | Get-Content } | Should -Not -Throw
-                { $content | Get-Content } | Should -Not -Throw
+                $page | Get-Content
+                $blogpost | Get-Content
+                $content | Get-Content
             }
 
             It "accepts a [String] as input for -Space" {
-                { Get-Content -Space "Foo" } | Should -Not -Throw
+                Get-Content -Space "Foo"
             }
 
             It "accepts a [AtlassianPS.ConfluencePS.Space] object as input for -Space" {
-                { Get-Content -Space $space } | Should -Not -Throw
+                Get-Content -Space $space
             }
 
             It "writes an error when an incomplete [AtlassianPS.ConfluencePS.Content] object is provided" {

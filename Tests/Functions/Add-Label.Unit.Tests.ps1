@@ -175,43 +175,43 @@ Describe "Add-Label" -Tag Unit {
         }
 
         It "accepts a [String] as input for -Content" {
-            { Add-ConfluenceLabel -Content "123" -Label "foo" } | Should -Not -Throw
+            Add-ConfluenceLabel -Content "123" -Label "foo"
         }
 
         It "accepts a [String] as input for -Content over the pipeline" {
-            { "123" | Add-ConfluenceLabel -Label "foo" } | Should -Not -Throw
+            "123" | Add-ConfluenceLabel -Label "foo"
         }
 
         It "accepts a [Int] as input for -Content" {
-            { Add-ConfluenceLabel -Content 123 -Label "foo" } | Should -Not -Throw
+            Add-ConfluenceLabel -Content 123 -Label "foo"
         }
 
         It "accepts a [Int] as input for -Content over the pipeline" {
-            { 123 | Add-ConfluenceLabel -Label "foo" } | Should -Not -Throw
+            123 | Add-ConfluenceLabel -Label "foo"
         }
 
         It "accepts a [AtlassianPS.ConfluencePS.BlogPost] as input for -Content" {
-            { Add-ConfluenceLabel -Content $blogpost -Label "foo" } | Should -Not -Throw
+            Add-ConfluenceLabel -Content $blogpost -Label "foo"
         }
 
         It "accepts a [AtlassianPS.ConfluencePS.Content] as input for -Content" {
-            { Add-ConfluenceLabel -Content $content -Label "foo" } | Should -Not -Throw
+            Add-ConfluenceLabel -Content $content -Label "foo"
         }
 
         It "accepts a [AtlassianPS.ConfluencePS.Page] as input for -Content" {
-            { Add-ConfluenceLabel -Content $page -Label "foo" } | Should -Not -Throw
+            Add-ConfluenceLabel -Content $page -Label "foo"
         }
 
         It "accepts a [AtlassianPS.ConfluencePS.BlogPost] as input for -Content over the pipeline" {
-            { $blogpost | Add-ConfluenceLabel -Label "foo" } | Should -Not -Throw
+            $blogpost | Add-ConfluenceLabel -Label "foo"
         }
 
         It "accepts a [AtlassianPS.ConfluencePS.Content] as input for -Content over the pipeline" {
-            { $content | Add-ConfluenceLabel -Label "foo" } | Should -Not -Throw
+            $content | Add-ConfluenceLabel -Label "foo"
         }
 
         It "accepts a [AtlassianPS.ConfluencePS.Page] as input for -Content over the pipeline" {
-            { $page | Add-ConfluenceLabel -Label "foo" } | Should -Not -Throw
+            $page | Add-ConfluenceLabel -Label "foo"
         }
 
         It "writes an error when an incomplete [AtlassianPS.ConfluencePS.Page] object is provided" {

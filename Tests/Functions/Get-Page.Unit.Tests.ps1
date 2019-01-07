@@ -137,7 +137,7 @@ Describe "Get-Page" -Tag Unit {
         }
 
         It "fetches pages by Title" {
-            @(Get-ConfluencePage -Space "Foo" -Title "Bar" -ServerName "foo").Count | Should -Be 1
+            Get-ConfluencePage -Space "Foo" -Title "Bar" -ServerName "foo" | Should -HaveCount 1
 
             $assertMockCalledSplat = @{
                 CommandName     = "Get-Content"
@@ -153,7 +153,7 @@ Describe "Get-Page" -Tag Unit {
         }
 
         It "fetches pages by Title supporting wildcards" {
-            @(Get-ConfluencePage -Space "Foo" -Title "Ba*" -ServerName "foo").Count | Should -Be 2
+            Get-ConfluencePage -Space "Foo" -Title "Ba*" -ServerName "foo" | Should -HaveCount 2
 
             $assertMockCalledSplat = @{
                 CommandName     = "Get-Content"
@@ -297,35 +297,35 @@ Describe "Get-Page" -Tag Unit {
         }
 
         It "accepts a [String] as input for -Page" {
-            { Get-ConfluencePage -Page "123" -ServerName "foo" } | Should -Not -Throw
+            Get-ConfluencePage -Page "123" -ServerName "foo"
         }
 
         It "accepts a [String] as input for -Page over the pipeline" {
-            { "123" | Get-ConfluencePage -ServerName "foo" } | Should -Not -Throw
+            "123" | Get-ConfluencePage -ServerName "foo"
         }
 
         It "accepts a [Int] as input for -Page" {
-            { Get-ConfluencePage -Page 123 -ServerName "foo" } | Should -Not -Throw
+            Get-ConfluencePage -Page 123 -ServerName "foo"
         }
 
         It "accepts a [Int] as input for -Page over the pipeline" {
-            { 123 | Get-ConfluencePage -ServerName "foo" } | Should -Not -Throw
+            123 | Get-ConfluencePage -ServerName "foo"
         }
 
         It "accepts a [AtlassianPS.ConfluencePS.Page] as input for -Page" {
-            { Get-ConfluencePage -Page $page -ServerName "foo" } | Should -Not -Throw
+            Get-ConfluencePage -Page $page -ServerName "foo"
         }
 
         It "accepts a [AtlassianPS.ConfluencePS.Page] as input for -Page over the pipeline" {
-            { $page | Get-ConfluencePage -ServerName "foo" } | Should -Not -Throw
+            $page | Get-ConfluencePage -ServerName "foo"
         }
 
         It "accepts a [String] as input for -Space" {
-            { Get-ConfluencePage -Space "Foo" -ServerName "foo" } | Should -Not -Throw
+            Get-ConfluencePage -Space "Foo" -ServerName "foo"
         }
 
         It "accepts a [AtlassianPS.ConfluencePS.Space] object as input for -Space" {
-            { Get-ConfluencePage -Space $space -ServerName "foo" } | Should -Not -Throw
+            Get-ConfluencePage -Space $space -ServerName "foo"
         }
     }
 }

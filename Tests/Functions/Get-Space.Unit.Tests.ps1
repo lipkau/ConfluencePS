@@ -214,19 +214,19 @@ Describe "Get-Space" -Tag Unit {
         }
 
         It "accepts a [String] as input for -Space" {
-            { Get-ConfluenceSpace -Space "Foo" } | Should -Not -Throw
+            Get-ConfluenceSpace -Space "Foo"
         }
 
         It "accepts a [String] as input for -Space over the pipeline" {
-            { "Foo" | Get-ConfluenceSpace } | Should -Not -Throw
+            "Foo" | Get-ConfluenceSpace
         }
 
         It "accepts a [AtlassianPS.ConfluencePS.Space] object as input for -Space" {
-            { Get-ConfluenceSpace -Space $space } | Should -Not -Throw
+            Get-ConfluenceSpace -Space $space
         }
 
         It "accepts a [AtlassianPS.ConfluencePS.Space] object as input for -Space over the pipeline" {
-            { $space | Get-ConfluenceSpace } | Should -Not -Throw
+            $space | Get-ConfluenceSpace
         }
 
         It "writes an error when an incomplete [AtlassianPS.ConfluencePS.Space] object is provided" {

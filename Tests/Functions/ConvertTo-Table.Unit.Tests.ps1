@@ -119,7 +119,7 @@ Describe 'ConvertTo-Table' -Tag Unit {
             $table = ConvertTo-ConfluenceTable -Content (Get-FakeService)
             $row = $table -split [Environment]::NewLine
 
-            $row.Count | Should -Be 12
+            $row | Should -HaveCount 12
             $row[0] | Should -BeExactly '|| Name || DisplayName || Status ||'
             $row[1..10] | ForEach-Object {
                 $_ | Should -Match '^| [\w\s]+? | [\w\s]+? | [\w\s]+? |$'
@@ -133,7 +133,7 @@ Describe 'ConvertTo-Table' -Tag Unit {
             $table = ConvertTo-ConfluenceTable ([PSCustomObject]@{ Name = $null; DisplayName = $null; Status = $null })
             $row = $table -split [Environment]::NewLine
 
-            $row.Count | Should -Be 3
+            $row | Should -HaveCount 3
             $row[0] | Should -BeExactly '|| Name || DisplayName || Status ||'
             $row[1] | Should -BeExactly '| | | |'
             $row[2] | Should -BeNullOrEmpty
@@ -143,7 +143,7 @@ Describe 'ConvertTo-Table' -Tag Unit {
             $table = ConvertTo-ConfluenceTable (Get-FakeService) -NoHeader
             $row = $table -split [Environment]::NewLine
 
-            $row.Count | Should -Be 11
+            $row | Should -HaveCount 11
             $row[0..9] | ForEach-Object {
                 $_ | Should -Match '^| [\w\s]+? | [\w\s]+? | [\w\s]+? |$'
                 $_ | Should -Not -Match '\|\|'
@@ -156,7 +156,7 @@ Describe 'ConvertTo-Table' -Tag Unit {
             $table = ConvertTo-ConfluenceTable ([PSCustomObject]@{ Name = "winlogon"; DisplayName = "Windows logon"; Status = "Running" }) -Vertical
             $row = $table -split [Environment]::NewLine
 
-            $row.Count | Should -Be 4
+            $row | Should -HaveCount 4
             $row[0..2] | ForEach-Object {
                 $_ | Should -Match '^|| [\w\s]+ || [\w\s]+ |$'
                 $_ | Should -Not -Match '\|\|$'
@@ -169,7 +169,7 @@ Describe 'ConvertTo-Table' -Tag Unit {
             $table = ConvertTo-ConfluenceTable ([PSCustomObject]@{ Name = $null; DisplayName = $null; Status = $null }) -Vertical
             $row = $table -split [Environment]::NewLine
 
-            $row.Count | Should -Be 4
+            $row | Should -HaveCount 4
             $row[0..2] | ForEach-Object {
                 $_ | Should -Match '^|| [\w\s]+? || |$'
                 $_ | Should -Not -Match '\|\|$'
@@ -182,7 +182,7 @@ Describe 'ConvertTo-Table' -Tag Unit {
             $table = ConvertTo-ConfluenceTable ([PSCustomObject]@{ Name = "winlogon"; DisplayName = "Windows logon"; Status = "Running" }) -Vertical -NoHeader
             $row = $table -split [Environment]::NewLine
 
-            $row.Count | Should -Be 4
+            $row | Should -HaveCount 4
             $row[0..2] | ForEach-Object {
                 $_ | Should -Match '^| [\w\s]+? | [\w\s]+? |$'
                 $_ | Should -Not -Match '\|\|$'
@@ -195,7 +195,7 @@ Describe 'ConvertTo-Table' -Tag Unit {
             $table = ConvertTo-ConfluenceTable ([PSCustomObject]@{ Name = $null; DisplayName = $null; Status = $null }) -Vertical -NoHeader
             $row = $table -split [Environment]::NewLine
 
-            $row.Count | Should -Be 4
+            $row | Should -HaveCount 4
             $row[0..2] | ForEach-Object {
                 $_ | Should -Match '^| [\w\s]+? | |$'
                 $_ | Should -Not -Match '\|\|$'
@@ -208,8 +208,8 @@ Describe 'ConvertTo-Table' -Tag Unit {
             $table = ConvertTo-ConfluenceTable (Get-FakeService)
             $row = $table -split [Environment]::NewLine
 
-            @($table).Count | Should -Be 1
-            @($row).Count | Should -BeGreaterThan 1
+            @($table) | Should -HaveCount 1
+            @($row) | Should -BeGreaterThHave-HaveCount 1
         }
     }
 }

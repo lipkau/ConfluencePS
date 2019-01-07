@@ -236,43 +236,43 @@ Describe "Get-Attachment" -Tag Unit {
         }
 
         It "accepts a [String] as input for -Content" {
-            { Get-ConfluenceAttachment -Content "123" } | Should -Not -Throw
+            Get-ConfluenceAttachment -Content "123"
         }
 
         It "accepts a [String] as input for -Content over the pipeline" {
-            { "123" | Get-ConfluenceAttachment } | Should -Not -Throw
+            "123" | Get-ConfluenceAttachment
         }
 
         It "accepts a [Int] as input for -Content" {
-            { Get-ConfluenceAttachment -Content 123 } | Should -Not -Throw
+            Get-ConfluenceAttachment -Content 123
         }
 
         It "accepts a [Int] as input for -Content over the pipeline" {
-            { 123 | Get-ConfluenceAttachment } | Should -Not -Throw
+            123 | Get-ConfluenceAttachment
         }
 
         It "accepts a [AtlassianPS.ConfluencePS.BlogPost] as input for -Content" {
-            { Get-ConfluenceAttachment -Content $blogpost } | Should -Not -Throw
+            Get-ConfluenceAttachment -Content $blogpost
         }
 
         It "accepts a [AtlassianPS.ConfluencePS.Content] as input for -Content" {
-            { Get-ConfluenceAttachment -Content $content } | Should -Not -Throw
+            Get-ConfluenceAttachment -Content $content
         }
 
         It "accepts a [AtlassianPS.ConfluencePS.Page] as input for -Content" {
-            { Get-ConfluenceAttachment -Content $page } | Should -Not -Throw
+            Get-ConfluenceAttachment -Content $page
         }
 
         It "accepts a [AtlassianPS.ConfluencePS.BlogPost] as input for -Content over the pipeline" {
-            { $blogpost | Get-ConfluenceAttachment } | Should -Not -Throw
+            $blogpost | Get-ConfluenceAttachment
         }
 
         It "accepts a [AtlassianPS.ConfluencePS.Content] as input for -Content over the pipeline" {
-            { $content | Get-ConfluenceAttachment } | Should -Not -Throw
+            $content | Get-ConfluenceAttachment
         }
 
         It "accepts a [AtlassianPS.ConfluencePS.Page] as input for -Content over the pipeline" {
-            { $page | Get-ConfluenceAttachment } | Should -Not -Throw
+            $page | Get-ConfluenceAttachment
         }
 
         It "writes an error when an incomplete [AtlassianPS.ConfluencePS.Page] object is provided" {

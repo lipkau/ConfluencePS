@@ -145,43 +145,43 @@ Describe "Add-Attachment" -Tag Unit {
         }
 
         It "accepts a [String] as input for -Content" {
-            { Add-ConfluenceAttachment -Content "123" -Path "TestDrive:/file.txt" } | Should -Not -Throw
+            Add-ConfluenceAttachment -Content "123" -Path "TestDrive:/file.txt"
         }
 
         It "accepts a [Int] as input for -Content" {
-            { Add-ConfluenceAttachment -Content 123 -Path "TestDrive:/file.txt" } | Should -Not -Throw
+            Add-ConfluenceAttachment -Content 123 -Path "TestDrive:/file.txt"
         }
 
         It "accepts a [Int] as input for -Content over the pipeline" {
-            { 123 | Add-ConfluenceAttachment -Path "TestDrive:/file.txt" } | Should -Not -Throw
+            123 | Add-ConfluenceAttachment -Path "TestDrive:/file.txt"
         }
 
         It "accepts a [AtlassianPS.ConfluencePS.BlogPost] as input for -Content" {
-            { Add-ConfluenceAttachment -Content $blogpost -Path "TestDrive:/file.txt" } | Should -Not -Throw
+            Add-ConfluenceAttachment -Path "TestDrive:/file.txt"
         }
 
         It "accepts a [AtlassianPS.ConfluencePS.Content] as input for -Content" {
-            { Add-ConfluenceAttachment -Content $content -Path "TestDrive:/file.txt" } | Should -Not -Throw
+            Add-ConfluenceAttachment -Content $content -Path "TestDrive:/file.txt"
         }
 
         It "accepts a [AtlassianPS.ConfluencePS.Page] as input for -Content" {
-            { Add-ConfluenceAttachment -Content $page -Path "TestDrive:/file.txt" } | Should -Not -Throw
+            Add-ConfluenceAttachment -Content $page -Path "TestDrive:/file.txt"
         }
 
         It "accepts a [AtlassianPS.ConfluencePS.BlogPost] as input for -Content over the pipeline" {
-            { $blogpost | Add-ConfluenceAttachment -Path "TestDrive:/file.txt" } | Should -Not -Throw
+            $blogpost | Add-ConfluenceAttachment -Path "TestDrive:/file.txt"
         }
 
         It "accepts a [AtlassianPS.ConfluencePS.Content] as input for -Content over the pipeline" {
-            { $content | Add-ConfluenceAttachment -Path "TestDrive:/file.txt" } | Should -Not -Throw
+            $content | Add-ConfluenceAttachment -Path "TestDrive:/file.txt"
         }
 
         It "accepts a [AtlassianPS.ConfluencePS.Page] as input for -Content over the pipeline" {
-            { $page | Add-ConfluenceAttachment -Path "TestDrive:/file.txt" } | Should -Not -Throw
+            $page | Add-ConfluenceAttachment -Path "TestDrive:/file.txt"
         }
 
         It "accepts a [String] as input for -Path over the pipeline" {
-            { "TestDrive:/file.txt" | Add-ConfluenceAttachment -Content 123 } | Should -Not -Throw
+            "TestDrive:/file.txt" | Add-ConfluenceAttachment -Content 123
         }
 
         It "writes an error when an incomplete [AtlassianPS.ConfluencePS.Page] object is provided" {
