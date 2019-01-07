@@ -78,7 +78,7 @@ function Get-Content {
         $resourceApi = "/rest/api/content{0}"
 
         if ($Space) {
-            if ( -not (Get-Member -InputObject $Space -Name Key) -or -not ($Space.Key)) {
+            if ( -not $Space.Key) {
                 $writeErrorSplat = @{
                     ExceptionType = "System.ApplicationException"
                     Message       = "Space is missing the Key"
@@ -111,7 +111,7 @@ function Get-Content {
         switch ($PsCmdlet.ParameterSetName) {
             "byId" {
                 foreach ($_content in $Content) {
-                    if ( -not (Get-Member -InputObject $_content -Name Id) -or -not ($_content.ID)) {
+                    if ( -not $_content.ID) {
                         $writeErrorSplat = @{
                             ExceptionType = "System.ApplicationException"
                             Message       = "Content is missing the Id"

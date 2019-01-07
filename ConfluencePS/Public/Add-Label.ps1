@@ -48,7 +48,7 @@ function Add-Label {
         Write-DebugMessage "PSBoundParameters: $($PSBoundParameters | Out-String)"
 
         foreach ($_content in $Content) {
-            if ( -not (Get-Member -InputObject $_content -Name Id) -or -not ($_content.Id)) {
+            if ( -not $_content.Id ) {
                 $writeErrorSplat = @{
                     ExceptionType = "System.ApplicationException"
                     Message       = "Content is missing the Id"

@@ -61,7 +61,7 @@ function Add-Attachment {
         Write-DebugMessage "ParameterSetName: $($PsCmdlet.ParameterSetName)"
         Write-DebugMessage "PSBoundParameters: $($PSBoundParameters | Out-String)"
 
-        if ( -not (Get-Member -InputObject $Content -Name Id) -or -not ($Content.Id)) {
+        if ( -not $Content.Id ) {
             $writeErrorSplat = @{
                 ExceptionType = "System.ApplicationException"
                 Message       = "Content is missing the Id"
