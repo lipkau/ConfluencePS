@@ -21,12 +21,11 @@ Describe "General project validation" -Tag Build {
 
         foreach ($function in $publicFunctions) {
 
-            # TODO
-            # It "has a test file for $function" {
-            #     $expectedTestFile = "$function.Unit.Tests.ps1"
+            It "has a test file for $function" {
+                $expectedTestFile = "$function.Unit.Tests.ps1"
 
-            #     $testFiles.Name | Should -Contain $expectedTestFile
-            # }
+                $testFiles.Name | Should -Contain $expectedTestFile
+            }
 
             It "exports $function" {
                 $expectedFunctionName = $function -replace "\-", "-$($module.Prefix)"
@@ -41,12 +40,11 @@ Describe "General project validation" -Tag Build {
 
         foreach ($function in $privateFunctions) {
 
-            # TODO
-            # It "has a test file for $function" {
-            #     $expectedTestFile = "$function.Unit.Tests.ps1"
+            It "has a test file for $function" {
+                $expectedTestFile = "$function.Unit.Tests.ps1"
 
-            #     $testFiles.Name | Should -Contain $expectedTestFile
-            # }
+                $testFiles.Name | Should -Contain $expectedTestFile
+            }
 
             It "does not export $function" {
                 $expectedFunctionName = $function -replace "\-", "-$($module.Prefix)"

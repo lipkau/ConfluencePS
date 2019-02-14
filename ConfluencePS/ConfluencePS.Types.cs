@@ -54,13 +54,13 @@ namespace AtlassianPS
 
         public class User
         {
-            public User() { }
-
             public User(String UserName, String DisplayName)
             {
                 this.UserName = UserName;
                 this.DisplayName = DisplayName;
             }
+
+            public User() { }
 
             public String UserName { get; set; }
             public String DisplayName { get; set; }
@@ -76,6 +76,21 @@ namespace AtlassianPS
 
         public class Version
         {
+            public Version(String _Number)
+            {
+                Number = Convert.ToUInt32(_Number);
+            }
+
+            public Version (UInt32 _Number)
+            {
+                Number = _Number;
+            }
+
+            public Version ()
+            {
+                Number = 0;
+            }
+
             public User By { get; set; }
             public DateTime When { get; set; }
             public String FriendlyWhen { get; set; }
@@ -145,21 +160,30 @@ namespace AtlassianPS
             public Content(String _ID)
             {
                 ID = Convert.ToUInt32(_ID);
+                Version = new Version();
             }
 
             public Content(UInt32 _ID)
             {
                 ID = _ID;
+                Version = new Version();
             }
 
-            public Content() {}
+            public Content() {
+                Version = new Version();
+            }
 
             public UInt32 ID { get; set; }
             public ContentStatus Status { get; set; }
             public String Title { get; set; }
-            public Label[] Labels { get; set; }
+            public Version Version { get; set; }
             public Uri URL { get; set; }
             public Uri Self { get; set; }
+
+            public override string ToString()
+            {
+                return "[" + ID + "] " + Title;
+            }
         }
 
         public class BlogPost : Content
@@ -169,6 +193,7 @@ namespace AtlassianPS
             public BlogPost() : base() {}
 
             // TODO
+            public Label[] Labels { get; set; }
         }
 
         public class Page : Content
@@ -179,57 +204,40 @@ namespace AtlassianPS
 
             public Space Space { get; set; }
             public User Author { get; set; }
-            public Version Version { get; set; }
             public String Body { get; set; }
             public Page[] Ancestors { get; set; }
+            public Label[] Labels { get; set; }
             public Uri ShortURL { get; set; }
-
-            public override string ToString()
-            {
-                return "[" + ID + "] " + Title;
-            }
         }
 
-        public class Attachment
+        public class Attachment : Content
         {
-            public UInt32 ID { get; set; }
-            public ContentStatus Status { get; set; }
-            public String Title { get; set; }
+            public Attachment(String ID) : base(ID) {}
+            public Attachment(UInt32 ID) : base(ID) {}
+            public Attachment() : base() {}
+
             public String Filename { get; set; }
             public String MediaType { get; set; }
             public UInt64 Size { get; set; }
             public String Comment { get; set; }
             public String SpaceKey { get; set; }
-            public UInt32 ContentID { get; set; }
-            public Version Version { get; set; }
             public Label[] Labels { get; set; }
-            public Uri URL { get; set; }
-            public Uri Self { get; set; }
-
-            public override string ToString()
-            {
-                return "[att" + ID + "] " + Title;
-            }
+            public UInt32 ContentID { get; set; }
         }
 
-        public class Comment
+        public class Comment : Content
         {
-            public UInt32 ID { get; set; }
-            public ContentStatus Status { get; set; }
-            public String Title { get; set; }
+            public Comment(String ID) : base(ID) {}
+            public Comment(UInt32 ID) : base(ID) {}
+            public Comment() : base() {}
+
+            public Space Space { get; set; }
             public User Author { get; set; }
-            public Version Version { get; set; }
             public String Body { get; set; }
+            public Content Container { get; set; }
             public CommentLocation Location { get; set; }
             public CommentResolution Resolution { get; set; }
             public CommentInlineProperties InlineProperties { get; set; }
-            public Uri URL { get; set; }
-            public Uri Self { get; set; }
-
-            public override string ToString()
-            {
-                return "[com" + ID + "] " + Title;
-            }
         }
 
         public class CommentResolution

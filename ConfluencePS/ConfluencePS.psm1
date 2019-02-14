@@ -39,7 +39,7 @@ Export-ModuleMember -Function $PublicFunctions.BaseName -Alias *
 #endregion LoadFunctions
 
 #region Configuration
-$script:moduleSettings = Join-Hashtable -Hashtable @{
+$moduleSettings = Join-Hashtable -Hashtable @{
     PageSize = 25
     Headers  = @{
         "Content-Type" = "application/json; charset=utf-8"
@@ -47,5 +47,5 @@ $script:moduleSettings = Join-Hashtable -Hashtable @{
     PagingContainers = @("results")
 }, (Get-AtlassianConfiguration -Name ConfluencePS -ValueOnly)
 
-Set-AtlassianConfiguration -Name ConfluencePS -Value $script:moduleSettings
+Set-AtlassianConfiguration -Name ConfluencePS -Value $moduleSettings
 #endregion Configuration
