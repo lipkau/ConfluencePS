@@ -45,15 +45,22 @@ function Add-ToModulePath ([String]$Path) {
     }
 }
 
-function Install-PSDepend {
-    if (-not (Get-Module PSDepend -ListAvailable)) {
-        if (Get-Module PowershellGet -ListAvailable) {
-            Install-Module PSDepend -Scope CurrentUser -ErrorAction Stop -Verbose
-        }
-        else {
-            throw "The PowershellGet module is not available."
-        }
+function Install-Dependency {
+    [CmdletBinding()]
+    param(
+        [ValidateSet("CurrentUser", "AllUsers")]
+        $Scope = "CurrentUser"
+    )
+
+    [Microsoft.PowerShell.Commands.ModuleSpecification[]]$RequiredModules = Import-LocalizedData -BaseDirectory $PSScriptRoot -FileName "build.requirements.psd1"
+    $Policy = (Get-PSRepository PSGallery).InstallationPolicy
+    try {
+        Set-PSRepository PSGallery -InstallationPolicy Trusted
+        $RequiredModules | Install-Module -Scope $Scope -Repository PSGallery -SkipPublisherCheck -AllowClobber -Verbose
+    } finally {
+        Set-PSRepository PSGallery -InstallationPolicy $Policy
     }
+    $RequiredModules | Import-Module
 }
 
 function Get-AppVeyorBuild {

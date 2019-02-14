@@ -1,4 +1,4 @@
-#requires -Module PowerShellGet
+#requires -Modules @{ ModuleName='PowerShellGet'; ModuleVersion='1.6.0' }
 
 [CmdletBinding()]
 [System.Diagnostics.CodeAnalysis.SuppressMessage('PSAvoidUsingWriteHost', '')]
@@ -16,8 +16,6 @@ if (-not ($gallery.Trusted)) {
     Set-PSRepository -Name "PSGallery" -InstallationPolicy Trusted -ErrorAction SilentlyContinue
 }
 
-Write-Host "Installing PSDepend"
-Install-Module PSDepend -Scope CurrentUser -Force
 Write-Host "Installing InvokeBuild"
 Install-Module InvokeBuild -Scope CurrentUser -Force
 
