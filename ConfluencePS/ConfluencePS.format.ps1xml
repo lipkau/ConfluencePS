@@ -261,5 +261,53 @@
                 </TableRowEntries>
             </TableControl>
         </View>
+        <View>
+            <Name>DefaultView</Name>
+            <ViewSelectedBy>
+                <TypeName>AtlassianPS.ConfluencePS.Comment</TypeName>
+            </ViewSelectedBy>
+            <TableControl>
+                <TableHeaders>
+                    <TableColumnHeader>
+                        <Label>ID</Label>
+                        <Width>10</Width>
+                        <Alignment>left</Alignment>
+                    </TableColumnHeader>
+                    <TableColumnHeader>
+                        <Label>Title</Label>
+                        <Width>26</Width>
+                        <Alignment>left</Alignment>
+                    </TableColumnHeader>
+                    <TableColumnHeader>
+                        <Label>Container</Label>
+                        <Width>15</Width>
+                        <Alignment>left</Alignment>
+                    </TableColumnHeader>
+                    <TableColumnHeader>
+                        <Label>Body</Label>
+                        <Width>33</Width>
+                        <Alignment>left</Alignment>
+                    </TableColumnHeader>
+                </TableHeaders>
+                <TableRowEntries>
+                    <TableRowEntry>
+                        <TableColumnItems>
+                            <TableColumnItem>
+                                <PropertyName>ID</PropertyName>
+                            </TableColumnItem>
+                            <TableColumnItem>
+                                <PropertyName>Title</PropertyName>
+                            </TableColumnItem>
+                            <TableColumnItem>
+                                <PropertyName>Container</PropertyName>
+                            </TableColumnItem>
+                            <TableColumnItem>
+                                <PropertyName>Body</PropertyName>
+                            </TableColumnItem>
+                        </TableColumnItems>
+                    </TableRowEntry>
+                </TableRowEntries>
+            </TableControl>
+        </View>
     </ViewDefinitions>
 </Configuration>

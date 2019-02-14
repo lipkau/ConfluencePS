@@ -3,11 +3,10 @@ function Get-Comment {
     [CmdletBinding( SupportsPaging )]
     [OutputType( [AtlassianPS.ConfluencePS.Comment] )]
     param(
-        [Parameter( Mandatory, ValueFromPipeline, ValueFromPipelineByPropertyName )]
-        [ValidateRange(1, [UInt32]::MaxValue)]
-        [Alias('ID', 'PageID', 'AttachmentID', 'BlogID')]
-        [UInt32[]]
-        $ContentID,
+        [Parameter( Mandatory, ValueFromPipeline )]
+        [Alias('ID')]
+        [AtlassianPS.ConfluencePS.Content[]]
+        $Content,
 
         [UInt32]
         $ParentVersion,
@@ -25,6 +24,7 @@ function Get-Comment {
         [UInt32]$PageSize = (Get-AtlassianConfiguration -Name "ConfluencePS" -ValueOnly)["PageSize"],
 
         [Parameter()]
+        [ValidateNotNullOrEmpty()]
         [ArgumentCompleter(
             {
                 param($commandName, $parameterName, $wordToComplete, $commandAst, $fakeBoundParameter)
@@ -54,9 +54,9 @@ function Get-Comment {
         Write-DebugMessage "ParameterSetName: $($PsCmdlet.ParameterSetName)"
         Write-DebugMessage "PSBoundParameters: $($PSBoundParameters | Out-String)"
 
-        foreach ($_contentID in $ContentID) {
+        foreach ($_content in $Content) {
             $iwParameters = @{
-                Uri          = $resourceApi -f $_contentID
+                Uri          = $resourceApi -f $_content
                 ServerName   = $ServerName
                 Method       = "Get"
                 GetParameter = @{
@@ -66,7 +66,7 @@ function Get-Comment {
                 Paging       = $true
                 OutputType   = [AtlassianPS.ConfluencePS.Comment]
                 Credential   = $Credential
-                Verbose    = $false
+                Verbose      = $false
             }
             if ($ParentVersion) { $iwParameters["GetParameter"]["parentVersion"] = $ParentVersion }
             if ($Location) { $iwParameters["GetParameter"]["location"] = $Location -join "&location=" }
