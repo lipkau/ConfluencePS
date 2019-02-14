@@ -139,6 +139,7 @@ task CopyModuleFiles {
 # Synopsis: Prepare tests for ./Release
 task PrepareTests Init, {
     $null = New-Item -Path "$env:BHBuildOutput/Tests" -ItemType Directory -ErrorAction SilentlyContinue
+    Copy-Item -Path "$env:BHProjectPath/Tools" -Destination $env:BHBuildOutput -Recurse -Force
     Copy-Item -Path "$env:BHProjectPath/Tests" -Destination $env:BHBuildOutput -Recurse -Force
     Copy-Item -Path "$env:BHProjectPath/PSScriptAnalyzerSettings.psd1" -Destination $env:BHBuildOutput -Force
 }
