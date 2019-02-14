@@ -1,5 +1,5 @@
 #requires -modules BuildHelpers
-#requires -modules @{ ModuleName = "Pester"; ModuleVersion = "4.4.2" }
+#requires -modules @{ ModuleName = "Pester"; ModuleVersion = "4.6.0" }
 
 Describe "Get-Content" -Tag Unit {
 
@@ -40,70 +40,72 @@ Describe "Get-Content" -Tag Unit {
 
             $command = Get-Command -Name Get-Content
 
-            It "has a [AtlassianPS.ConfluencePS.Content[]] -Content parameter" {
-                $command.Parameters.ContainsKey("Content")
-                $command.Parameters["Content"].ParameterType | Should -Be "AtlassianPS.ConfluencePS.Content[]"
+            It "has a mandatory parameter 'Content'" {
+                $command | Should -HaveParameter "Content" -Mandatory
             }
 
-            It "has a [UInt32] -Version parameter" {
-                $command.Parameters.ContainsKey("Version")
-                $command.Parameters["Version"].ParameterType | Should -Be "UInt32"
+            It "has a parameter 'Content' of type [AtlassianPS.ConfluencePS.Content[]]" {
+                $command | Should -HaveParameter "Content" -Type [AtlassianPS.ConfluencePS.Content[]]
             }
 
-            It "has a [AtlassianPS.ConfluencePS.Space] -Space parameter" {
-                $command.Parameters.ContainsKey("Space")
-                $command.Parameters["Space"].ParameterType | Should -Be "AtlassianPS.ConfluencePS.Space"
+            It "has a parameter 'Version' of type [UInt32]" {
+                $command | Should -HaveParameter "Version" -Type [UInt32]
             }
 
-            It "has a [String] -Title parameter" {
-                $command.Parameters.ContainsKey("Title")
-                $command.Parameters["Title"].ParameterType | Should -Be "String"
+            It "has a parameter 'Space' of type [AtlassianPS.ConfluencePS.Space]" {
+                $command | Should -HaveParameter "Space" -Type [AtlassianPS.ConfluencePS.Space]
             }
 
-            It "has a [AtlassianPS.ConfluencePS.ContentStatus] -Status parameter" {
-                $command.Parameters.ContainsKey("Status")
-                $command.Parameters["Status"].ParameterType | Should -Be "AtlassianPS.ConfluencePS.ContentStatus"
+            It "has a parameter 'Title' of type [String]" {
+                $command | Should -HaveParameter "Title" -Type [String]
             }
 
-            It "has a [String] -Query parameter" {
-                $command.Parameters.ContainsKey("Query")
-                $command.Parameters["Query"].ParameterType | Should -Be "String"
+            It "has a parameter 'Status' of type [AtlassianPS.ConfluencePS.ContentStatus]" {
+                $command | Should -HaveParameter "Status" -Type [AtlassianPS.ConfluencePS.ContentStatus]
             }
 
-            It "has a [DateTime] -PostingDay parameter" {
-                $command.Parameters.ContainsKey("PostingDay")
-                $command.Parameters["PostingDay"].ParameterType | Should -Be "DateTime"
+            It "has a mandatory parameter 'Query'" {
+                $command | Should -HaveParameter "Query" -Mandatory
             }
 
-            It "has a [UInt32] -PageSize parameter" {
-                $command.Parameters.ContainsKey("PageSize")
-                $command.Parameters["PageSize"].ParameterType | Should -Be "UInt32"
+            It "has a parameter 'Query' of type [String]" {
+                $command | Should -HaveParameter "Query" -Type [String]
             }
 
-            It "has a [String] -Expand parameter" {
-                $command.Parameters.ContainsKey("Expand")
-                $command.Parameters["Expand"].ParameterType | Should -Be "String"
+            It "has a parameter 'PostingDay' of type [DateTime]" {
+                $command | Should -HaveParameter "PostingDay" -Type [DateTime]
             }
 
-            It "has a [String] -ServerName parameter" {
-                $command.Parameters.ContainsKey("ServerName")
-                $command.Parameters["ServerName"].ParameterType | Should -Be "String"
+            It "has a parameter 'Expand' of type [String]" {
+                $command | Should -HaveParameter "Expand" -Type [String]
             }
 
-            It "has a [UInt32] -PageSize parameter" {
-                $command.Parameters.ContainsKey("PageSize")
-                $command.Parameters["PageSize"].ParameterType | Should -Be "UInt32"
+            It "has a parameter 'PageSize' of type [UInt32]" {
+                $command | Should -HaveParameter "PageSize" -Type [UInt32]
             }
 
-            It "has an ArgumentCompleter for -ServerName" {
-                $command.Parameters["ServerName"].Attributes |
-                    Where-Object {$_ -is [ArgumentCompleter]} |
-                    Should -Not -BeNullOrEmpty
+            It "has a parameter 'PageSize' with a default value" {
+                $command | Should -HaveParameter "PageSize" -DefaultValue '(Get-AtlassianConfiguration -Name "ConfluencePS" -ValueOnly)["PageSize"]'
             }
 
-            It "has a [PSCredential] -Credential parameter" {
-                $command.Parameters.ContainsKey('Credential')
-                $command.Parameters["Credential"].ParameterType | Should -Be "PSCredential"
+            It "has a parameter 'ServerName' of type [String]" {
+                $command | Should -HaveParameter "ServerName" -Type [String]
+            }
+
+            It "has a parameter 'ServerName' with ArgumentCompleter" {
+                $command | Should -HaveParameter "ServerName" -HasArgumentCompleter
+            }
+
+            It "has a parameter 'ServerName' with a default value" {
+                $command | Should -HaveParameter "ServerName" -DefaultValue "(Get-DefaultServer)"
+            }
+
+            It "has a parameter 'Credential' of type [PSCredential]" {
+                $command | Should -HaveParameter "Credential" -Type [PSCredential]
+            }
+
+            It "has a parameter 'Credential' with a default value" {
+                $command | Should -HaveParameter "Credential" -DefaultValue "[System.Management.Automation.PSCredential]::Empty"
             }
         }
 

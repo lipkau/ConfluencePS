@@ -1,5 +1,5 @@
 #requires -modules BuildHelpers
-#requires -modules @{ ModuleName = "Pester"; ModuleVersion = "4.4.2" }
+#requires -modules @{ ModuleName = "Pester"; ModuleVersion = "4.6.0" }
 [Diagnostics.CodeAnalysis.SuppressMessageAttribute(
     "PSAvoidUsingConvertToSecureStringWithPlainText",
     "",
@@ -34,25 +34,32 @@ Describe "New-Session" -Tag Unit {
 
         $command = Get-Command -Name New-ConfluenceSession
 
-        It "has a [String] -ServerName parameter" {
-            $command.Parameters.ContainsKey("ServerName")
-            $command.Parameters["ServerName"].ParameterType | Should -Be "String"
+        It "has a parameter 'Headers' of type [Hashtable]" {
+            $command | Should -HaveParameter "Headers" -Type [Hashtable]
         }
 
-        It "has an ArgumentCompleter for -ServerName" {
-            $command.Parameters["ServerName"].Attributes |
-                Where-Object {$_ -is [ArgumentCompleter]} |
-                Should -Not -BeNullOrEmpty
+        It "has a mandatory parameter 'ServerName'" {
+            $command | Should -HaveParameter "ServerName" -Mandatory
         }
 
-        It "has a [Hashtable] -Headers parameter" {
-            $command.Parameters.ContainsKey('Headers')
-            $command.Parameters["Headers"].ParameterType | Should -Be "Hashtable"
+        It "has a parameter 'ServerName' with ArgumentCompleter" {
+            $command | Should -HaveParameter "ServerName" -HasArgumentCompleter
         }
 
-        It "has a [PSCredential] -Credential parameter" {
-            $command.Parameters.ContainsKey('Credential')
-            $command.Parameters["Credential"].ParameterType | Should -Be "PSCredential"
+        It "has a parameter 'ServerName' with a default value" {
+            $command | Should -HaveParameter "ServerName" -DefaultValue ""
+        }
+
+        It "has a mandatory parameter 'Credential'" {
+            $command | Should -HaveParameter "Credential" -Mandatory
+        }
+
+        It "has a parameter 'Credential' of type [PSCredential]" {
+            $command | Should -HaveParameter "Credential" -Type [PSCredential]
+        }
+
+        It "has a parameter 'Credential' with a default value" {
+            $command | Should -HaveParameter "Credential" -DefaultValue ""
         }
     }
 

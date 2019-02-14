@@ -1,5 +1,5 @@
 #requires -modules BuildHelpers
-#requires -modules @{ ModuleName = "Pester"; ModuleVersion = "4.4.2" }
+#requires -modules @{ ModuleName = "Pester"; ModuleVersion = "4.6.0" }
 
 Describe 'ConvertTo-Table' -Tag Unit {
 
@@ -21,19 +21,20 @@ Describe 'ConvertTo-Table' -Tag Unit {
     Context "Sanity checking" {
         $command = Get-Command -Name ConvertTo-ConfluenceTable
 
-        It "has a [System.Object] -Content parameter" {
-            $command.Parameters.ContainsKey("Content")
-            $command.Parameters["Content"].ParameterType | Should -Be "System.Object"
+        It "has a mandatory parameter 'Content'" {
+            $command | Should -HaveParameter "Content" -Mandatory
         }
 
-        It "has a [Switch] -Vertical parameter" {
-            $command.Parameters.ContainsKey("Vertical")
-            $command.Parameters["Vertical"].ParameterType | Should -Be "Switch"
+        It "has a parameter 'Content' of type [System.Object]" {
+            $command | Should -HaveParameter "Content" -Type [System.Object]
         }
 
-        It "has a [Switch] -NoHeader parameter" {
-            $command.Parameters.ContainsKey("NoHeader")
-            $command.Parameters["NoHeader"].ParameterType | Should -Be "Switch"
+        It "has a parameter 'Vertical' of type [Switch]" {
+            $command | Should -HaveParameter "Vertical" -Type [Switch]
+        }
+
+        It "has a parameter 'NoHeader' of type [Switch]" {
+            $command | Should -HaveParameter "NoHeader" -Type [Switch]
         }
     }
 
@@ -43,54 +44,54 @@ Describe 'ConvertTo-Table' -Tag Unit {
         # linux and macOS don't have Get-Service
         function Get-FakeService {
             [PSCustomObject]@{
-                Name = "AppMgmt"
+                Name        = "AppMgmt"
                 DisplayName = "Application Management"
-                Status = "Running"
+                Status      = "Running"
             }
             [PSCustomObject]@{
-                Name = "BITS"
+                Name        = "BITS"
                 DisplayName = "Background Intelligent Transfer Service"
-                Status = "Running"
+                Status      = "Running"
             }
             [PSCustomObject]@{
-                Name = "Dhcp"
+                Name        = "Dhcp"
                 DisplayName = "DHCP Client"
-                Status = "Running"
+                Status      = "Running"
             }
             [PSCustomObject]@{
-                Name = "DsmSvc"
+                Name        = "DsmSvc"
                 DisplayName = "Device Setup Manager"
-                Status = "Running"
+                Status      = "Running"
             }
             [PSCustomObject]@{
-                Name = "EFS"
+                Name        = "EFS"
                 DisplayName = "Encrypting File System (EFS)"
-                Status = "Running"
+                Status      = "Running"
             }
             [PSCustomObject]@{
-                Name = "lmhosts"
+                Name        = "lmhosts"
                 DisplayName = "TCP/IP NetBIOS Helper"
-                Status = "Running"
+                Status      = "Running"
             }
             [PSCustomObject]@{
-                Name = "MSDTC"
+                Name        = "MSDTC"
                 DisplayName = "Distributed Transaction Coordinator"
-                Status = "Stopped"
+                Status      = "Stopped"
             }
             [PSCustomObject]@{
-                Name = "NlaSvc"
+                Name        = "NlaSvc"
                 DisplayName = "Network Location Awareness"
-                Status = "Stopped"
+                Status      = "Stopped"
             }
             [PSCustomObject]@{
-                Name = "PolicyAgent"
+                Name        = "PolicyAgent"
                 DisplayName = "IPsec Policy Agent"
-                Status = "Stopped"
+                Status      = "Stopped"
             }
             [PSCustomObject]@{
-                Name = "SessionEnv"
+                Name        = "SessionEnv"
                 DisplayName = "Remote Desktop Configuration"
-                Status = "Stopped"
+                Status      = "Stopped"
             }
         }
         #endregion Mocking
@@ -188,8 +189,8 @@ Describe 'ConvertTo-Table' -Tag Unit {
             $table = ConvertTo-ConfluenceTable (Get-FakeService)
             $row = $table -split [Environment]::NewLine
 
-            @($table) | Should -HaveCount 1
-            @($row) | Should -BeGreaterThHave-HaveCount 1
+            $table | Should -HaveCount 1
+            @($row).Count | Should -BeGreaterThan 1
         }
     }
 }

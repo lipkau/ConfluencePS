@@ -1,5 +1,5 @@
 #requires -modules BuildHelpers
-#requires -modules @{ ModuleName = "Pester"; ModuleVersion = "4.3.1" }
+#requires -modules @{ ModuleName = "Pester"; ModuleVersion = "4.6.0" }
 
 Describe "[AtlassianPS.ConfluencePS.ContentStatus] Tests" -Tag Unit {
 
@@ -53,7 +53,7 @@ Describe "[AtlassianPS.ConfluencePS.ContentStatus] Tests" -Tag Unit {
     It "can enumerate it's values" {
         $values = [System.Enum]::GetNames('AtlassianPS.ConfluencePS.ContentStatus')
 
-        $values.Count | Should -Be 5
+        $values | Should -HaveCount 5
         $values | Should -Contain "current"
         $values | Should -Contain "trashed"
         $values | Should -Contain "historical"

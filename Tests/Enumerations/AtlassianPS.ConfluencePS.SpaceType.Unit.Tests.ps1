@@ -1,5 +1,5 @@
 #requires -modules BuildHelpers
-#requires -modules @{ ModuleName = "Pester"; ModuleVersion = "4.3.1" }
+#requires -modules @{ ModuleName = "Pester"; ModuleVersion = "4.6.0" }
 
 Describe "[AtlassianPS.ConfluencePS.SpaceType] Tests" -Tag Unit {
 
@@ -50,7 +50,7 @@ Describe "[AtlassianPS.ConfluencePS.SpaceType] Tests" -Tag Unit {
     It "can enumerate it's values" {
         $values = [System.Enum]::GetNames('AtlassianPS.ConfluencePS.SpaceType')
 
-        $values.Count | Should -Be 2
+        $values | Should -HaveCount 2
         $values | Should -Contain "global"
         $values | Should -Contain "personal"
     }

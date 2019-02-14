@@ -1,5 +1,5 @@
 #requires -modules BuildHelpers
-#requires -modules @{ ModuleName = "Pester"; ModuleVersion = "4.4.2" }
+#requires -modules @{ ModuleName = "Pester"; ModuleVersion = "4.6.0" }
 
 Describe "Get-Space" -Tag Unit {
 
@@ -28,30 +28,40 @@ Describe "Get-Space" -Tag Unit {
 
         $command = Get-Command -Name Get-ConfluenceSpace
 
-        It "has a [AtlassianPS.ConfluencePS.Space[]] -Space parameter" {
-            $command.Parameters.ContainsKey("Space")
-            $command.Parameters["Space"].ParameterType | Should -Be "AtlassianPS.ConfluencePS.Space[]"
+        It "has a mandatory parameter 'Space'" {
+            $command | Should -HaveParameter "Space"
         }
 
-        It "has a [UInt32] -PageSize parameter" {
-            $command.Parameters.ContainsKey("PageSize")
-            $command.Parameters["PageSize"].ParameterType | Should -Be "UInt32"
+        It "has a parameter 'Space' of type [AtlassianPS.ConfluencePS.Space[]]" {
+            $command | Should -HaveParameter "Space" -Type [AtlassianPS.ConfluencePS.Space[]]
         }
 
-        It "has a [String] -ServerName parameter" {
-            $command.Parameters.ContainsKey("ServerName")
-            $command.Parameters["ServerName"].ParameterType | Should -Be "String"
+        It "has a parameter 'PageSize' of type [UInt32]" {
+            $command | Should -HaveParameter "PageSize" -Type [UInt32]
         }
 
-        It "has an ArgumentCompleter for -ServerName" {
-            $command.Parameters["ServerName"].Attributes |
-                Where-Object {$_ -is [ArgumentCompleter]} |
-                Should -Not -BeNullOrEmpty
+        It "has a parameter 'PageSize' with a default value" {
+            $command | Should -HaveParameter "PageSize" -DefaultValue '(Get-AtlassianConfiguration -Name "ConfluencePS" -ValueOnly)["PageSize"]'
         }
 
-        It "has a [PSCredential] -Credential parameter" {
-            $command.Parameters.ContainsKey('Credential')
-            $command.Parameters["Credential"].ParameterType | Should -Be "PSCredential"
+        It "has a parameter 'ServerName' of type [String]" {
+            $command | Should -HaveParameter "ServerName" -Type [String]
+        }
+
+        It "has a parameter 'ServerName' with ArgumentCompleter" {
+            $command | Should -HaveParameter "ServerName" -HasArgumentCompleter
+        }
+
+        It "has a parameter 'ServerName' with a default value" {
+            $command | Should -HaveParameter "ServerName" -DefaultValue "(Get-DefaultServer)"
+        }
+
+        It "has a parameter 'Credential' of type [PSCredential]" {
+            $command | Should -HaveParameter "Credential" -Type [PSCredential]
+        }
+
+        It "has a parameter 'Credential' with a default value" {
+            $command | Should -HaveParameter "Credential" -DefaultValue "[System.Management.Automation.PSCredential]::Empty"
         }
     }
 

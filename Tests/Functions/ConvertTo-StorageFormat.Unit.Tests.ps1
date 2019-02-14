@@ -1,5 +1,5 @@
 #requires -modules BuildHelpers
-#requires -modules @{ ModuleName = "Pester"; ModuleVersion = "4.4.2" }
+#requires -modules @{ ModuleName = "Pester"; ModuleVersion = "4.6.0" }
 
 Describe "ConvertTo-StorageFormat" -Tag Unit {
 
@@ -28,25 +28,32 @@ Describe "ConvertTo-StorageFormat" -Tag Unit {
 
         $command = Get-Command -Name ConvertTo-ConfluenceStorageFormat
 
-        It "has a [String[]] -Content parameter" {
-            $command.Parameters.ContainsKey("Content")
-            $command.Parameters["Content"].ParameterType | Should -Be "String[]"
+        It "has a mandatory parameter 'Content'" {
+            $command | Should -HaveParameter "Content" -Mandatory
         }
 
-        It "has a [String] -ServerName parameter" {
-            $command.Parameters.ContainsKey("ServerName")
-            $command.Parameters["ServerName"].ParameterType | Should -Be "String"
+        It "has a parameter 'Content' of type [String[]]" {
+            $command | Should -HaveParameter "Content" -Type [String[]]
         }
 
-        It "has an ArgumentCompleter for -ServerName" {
-            $command.Parameters["ServerName"].Attributes |
-                Where-Object {$_ -is [ArgumentCompleter]} |
-                Should -Not -BeNullOrEmpty
+        It "has a parameter 'ServerName' of type [String]" {
+            $command | Should -HaveParameter "ServerName" -Type [String]
         }
 
-        It "has a [PSCredential] -Credential parameter" {
-            $command.Parameters.ContainsKey('Credential')
-            $command.Parameters["Credential"].ParameterType | Should -Be "PSCredential"
+        It "has a parameter 'ServerName' with ArgumentCompleter" {
+            $command | Should -HaveParameter "ServerName" -HasArgumentCompleter
+        }
+
+        It "has a parameter 'ServerName' with a default value" {
+            $command | Should -HaveParameter "ServerName" -DefaultValue "(Get-DefaultServer)"
+        }
+
+        It "has a parameter 'Credential' of type [PSCredential]" {
+            $command | Should -HaveParameter "Credential" -Type [PSCredential]
+        }
+
+        It "has a parameter 'Credential' with a default value" {
+            $command | Should -HaveParameter "Credential" -DefaultValue "[System.Management.Automation.PSCredential]::Empty"
         }
     }
 

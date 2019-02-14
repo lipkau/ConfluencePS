@@ -1,5 +1,5 @@
 #requires -modules BuildHelpers
-#requires -modules @{ ModuleName = "Pester"; ModuleVersion = "4.3.1" }
+#requires -modules @{ ModuleName = "Pester"; ModuleVersion = "4.6.0" }
 
 Describe "[AtlassianPS.ConfluencePS.CommentLocation] Tests" -Tag Unit {
 
@@ -51,7 +51,7 @@ Describe "[AtlassianPS.ConfluencePS.CommentLocation] Tests" -Tag Unit {
     It "can enumerate it's values" {
         $values = [System.Enum]::GetNames('AtlassianPS.ConfluencePS.CommentLocation')
 
-        $values.Count | Should -Be 3
+        $values | Should -HaveCount 3
         $values | Should -Contain "inline"
         $values | Should -Contain "footer"
         $values | Should -Contain "resolved"
