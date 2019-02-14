@@ -1,76 +1,91 @@
 function Get-Label {
-    [CmdletBinding(
-        SupportsPaging = $true
+    # .ExternalHelp ..\ConfluencePS-help.xml
+    [CmdletBinding( SupportsPaging )]
+    [OutputType(
+        [AtlassianPS.ConfluencePS.Attachment],
+        [AtlassianPS.ConfluencePS.BlogPost],
+        [AtlassianPS.ConfluencePS.Page]
     )]
-    [OutputType([ConfluencePS.ContentLabelSet])]
     param (
-        [Parameter( Mandatory = $true )]
-        [URi]$apiURi,
-
-        [Parameter( Mandatory = $true )]
-        [PSCredential]$Credential,
-
-        [Parameter(
-            Position = 0,
-            Mandatory = $true,
-            ValueFromPipeline = $true,
-            ValueFromPipelineByPropertyName = $true
-        )]
-        [ValidateRange(1, [int]::MaxValue)]
+        [Parameter( Mandatory, ValueFromPipeline )]
         [Alias('ID')]
-        [int[]]$PageID,
+        [AtlassianPS.ConfluencePS.Content[]]
+        $Content,
 
-        [ValidateRange(1, [int]::MaxValue)]
-        [int]$PageSize = 25
+        [UInt32]
+        $PageSize = (Get-AtlassianConfiguration -Name "ConfluencePS" -ValueOnly)["PageSize"],
+
+        [Parameter()]
+        [ValidateNotNullOrEmpty()]
+        [ArgumentCompleter(
+            {
+                param($commandName, $parameterName, $wordToComplete, $commandAst, $fakeBoundParameter)
+                $command = Get-Command "Get-*ServerConfiguration" -Module AtlassianPS.Configuration
+                & $command.Name |
+                    Where-Object { $_.Type -eq [AtlassianPS.ServerType]"Confluence" } |
+                    Where-Object { $_.Name -like "$wordToComplete*" } |
+                    ForEach-Object { [System.Management.Automation.CompletionResult]::new( $_.Name, $_.Name, [System.Management.Automation.CompletionResultType]::ParameterValue, $_.Name ) }
+            }
+        )]
+        [String]
+        $ServerName = (Get-DefaultServer),
+
+        [Parameter()]
+        [System.Management.Automation.PSCredential]
+        [System.Management.Automation.Credential()]
+        $Credential = [System.Management.Automation.PSCredential]::Empty
     )
 
-    BEGIN {
-        Write-Verbose "[$($MyInvocation.MyCommand.Name)] Function started"
+    begin {
+        Write-Verbose "Function started"
 
-        $resourceApi = "$apiURi/content/{0}/label"
+        $resourceApi = "/rest/api/content/{0}/label"
     }
 
-    PROCESS {
-        Write-Debug "[$($MyInvocation.MyCommand.Name)] ParameterSetName: $($PsCmdlet.ParameterSetName)"
-        Write-Debug "[$($MyInvocation.MyCommand.Name)] PSBoundParameters: $($PSBoundParameters | Out-String)"
+    process {
+        Write-DebugMessage "ParameterSetName: $($PsCmdlet.ParameterSetName)"
+        Write-DebugMessage "PSBoundParameters: $($PSBoundParameters | Out-String)"
 
-        if (($_) -and -not($_ -is [ConfluencePS.Page] -or $_ -is [int])) {
-            $message = "The Object in the pipe is not a Page."
-            $exception = New-Object -TypeName System.ArgumentException -ArgumentList $message
-            Throw $exception
-        }
-
-        $iwParameters = @{
-            Uri           = ""
-            Method        = 'Get'
-            GetParameters = @{
-                limit = $PageSize
+        foreach ($_content in $Content) {
+            if ( -not (Get-Member -InputObject $_content -Name Id) -or -not ($_content.ID)) {
+                $writeErrorSplat = @{
+                    ExceptionType = "System.ApplicationException"
+                    Message       = "Page is missing the Id"
+                    ErrorId       = "AtlassianPS.ConfluencePS.MissingProperty"
+                    Category      = "InvalidData"
+                    Cmdlet        = $PSCmdlet
+                }
+                WriteError @writeErrorSplat
+                continue
             }
-            OutputType    = [ConfluencePS.Label]
-            Credential    = $Credential
-        }
 
-        # Paging
-        ($PSCmdlet.PagingParameters | Get-Member -MemberType Property).Name | ForEach-Object {
-            $iwParameters[$_] = $PSCmdlet.PagingParameters.$_
-        }
+            $_content = Resolve-ContentType -InputObject $_content -ServerName $ServerName -Credential $Credential
 
-        foreach ($_page in $PageID) {
-            if ($_ -is [ConfluencePS.Page]) {
-                $InputObject = $_
+            $iwParameters = @{
+                Uri          = $resourceApi -f $_content.ID
+                ServerName   = $ServerName
+                Method       = 'Get'
+                GetParameter = @{
+                    limit = $PageSize
+                }
+                Paging       = $true
+                OutputType   = [AtlassianPS.ConfluencePS.Label]
+                Credential   = $Credential
             }
-            else {
-                $InputObject = Get-Page -PageID $_page -ApiURi $apiURi -Credential $Credential
+
+            # Paging
+            ($PSCmdlet.PagingParameters | Get-Member -MemberType Property).Name | ForEach-Object {
+                $iwParameters[$_] = $PSCmdlet.PagingParameters.$_
             }
-            $iwParameters["Uri"] = $resourceApi -f $_page
-            $output = New-Object -TypeName ConfluencePS.ContentLabelSet
-            $output.Page = $InputObject
-            $output.Labels += (Invoke-Method @iwParameters)
-            $output
+
+            Write-DebugMessage "Invoking API Method with `$iwParameters" -BreakPoint
+            $_content.Labels = Invoke-Method @iwParameters
+
+            $_content
         }
     }
 
-    END {
-        Write-Verbose "[$($MyInvocation.MyCommand.Name)] Function ended"
+    end {
+        Write-Verbose "Function ended"
     }
 }

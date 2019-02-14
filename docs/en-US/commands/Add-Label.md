@@ -179,6 +179,8 @@ For more information, see about_CommonParameters
 
 ## INPUTS
 
+### AtlassianPS.ConfluencePS.Attachment
+
 ### AtlassianPS.ConfluencePS.BlogPost
 
 ### AtlassianPS.ConfluencePS.Content
@@ -187,11 +189,17 @@ For more information, see about_CommonParameters
 
 ## OUTPUTS
 
-### AtlassianPS.ConfluencePS.Content
+### AtlassianPS.ConfluencePS.Attachment
+
+### AtlassianPS.ConfluencePS.BlogPost
+
+### AtlassianPS.ConfluencePS.Page
 
 ## NOTES
 
 ## RELATED LINKS
+
+[Get-ConfluenceAttachment](../Get-ConfluenceAttachment)
 
 [Get-ConfluenceBlogPost](../Get-ConfluenceBlogPost)
 
