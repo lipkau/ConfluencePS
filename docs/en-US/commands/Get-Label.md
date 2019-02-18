@@ -1,11 +1,11 @@
 ---
 external help file: ConfluencePS-help.xml
-online version: https://atlassianps.org/docs/ConfluencePS/commands/Get-Label/
-Module Name: ConfluencePS
-locale: en-US
-schema: 2.0.0
 layout: documentation
+locale: en-US
+Module Name: ConfluencePS
+online version: https://atlassianps.org/docs/ConfluencePS/commands/Get-Label/
 permalink: /docs/ConfluencePS/commands/Get-Label/
+schema: 2.0.0
 ---
 # Get-Label
 
@@ -16,8 +16,9 @@ Retrieve all labels applied to the given object(s).
 ## SYNTAX
 
 ```powershell
-Get-ConfluenceLabel -apiURi <Uri> -Credential <PSCredential> [-PageID] <Int32[]> [-PageSize <Int32>]
- [-IncludeTotalCount] [-Skip <UInt64>] [-First <UInt64>]
+Get-ConfluenceLabel -Content <Content[]> [-PageSize <UInt32>] [-ServerName <String>]
+ [-Credential <PSCredential>] [-IncludeTotalCount] [-Skip <UInt64>] [-First <UInt64>]
+ [<CommonParameters>]
 ```
 
 ## DESCRIPTION
@@ -27,18 +28,18 @@ It is intended to eventually support other content types as well.
 
 ## EXAMPLES
 
-### -------------------------- EXAMPLE 1 --------------------------
+### EXAMPLE 1
 
 ```powershell
-Get-ConfluenceLabel -PageID 123456
+Get-ConfluenceLabel -Page 123456
 ```
 
 Returns all labels applied to wiki page 123456.
 
-### -------------------------- EXAMPLE 2 --------------------------
+### EXAMPLE 2
 
 ```powershell
-Get-ConfluencePage -SpaceKey HOTH -Label skywalker | Get-ConfluenceLabel
+Get-ConfluencePage -Space HOTH -Label skywalker | Get-ConfluenceLabel
 ```
 
 For all pages in HOTH with the "skywalker" label applied,
@@ -46,55 +47,23 @@ return the full list of labels found on each page.
 
 ## PARAMETERS
 
-### -apiURi
+### -Content
 
-The URi of the API interface.
-Value can be set persistently with Set-ConfluenceInfo.
+Identifies the Content to be looked up.
 
-```yaml
-Type: Uri
-Parameter Sets: (All)
-Aliases:
-
-Required: True
-Position: Named
-Default value: None
-Accept pipeline input: False
-Accept wildcard characters: False
-```
-
-### -Credential
-
-Confluence's credentials for authentication.
-Value can be set persistently with Set-ConfluenceInfo.
+> This parameter takes Content objects as input.
+> But a String or Integer can also be passed.
+> This will be used as "Id" for the Content.
 
 ```yaml
-Type: PSCredential
-Parameter Sets: (All)
-Aliases:
-
-Required: True
-Position: Named
-Default value: None
-Accept pipeline input: False
-Accept wildcard characters: False
-```
-
-### -PageID
-
-List the PageID number to check for labels.
-
-Accepts piped input.
-
-```yaml
-Type: Int32[]
+Type: Content[]
 Parameter Sets: (All)
 Aliases: ID
 
 Required: True
-Position: 1
+Position: 0
 Default value: None
-Accept pipeline input: True (ByPropertyName, ByValue)
+Accept pipeline input: True (ByValue)
 Accept wildcard characters: False
 ```
 
@@ -107,7 +76,7 @@ This setting can be tuned to get better performance according to the load on the
 > Warning: too high of a PageSize can cause a timeout on the request.
 
 ```yaml
-Type: Int32
+Type: UInt32
 Parameter Sets: (All)
 Aliases:
 
@@ -174,14 +143,81 @@ Accept pipeline input: False
 Accept wildcard characters: False
 ```
 
+### -ServerName
+
+Name of the server registered in AtlassianPS.Configuration.
+
+This parameter supports tab-completion.
+
+> More information on how to authenticate in [about_ConfluencePS_Authentication](../../about/authentication.html)
+
+```yaml
+Type: String
+Parameter Sets: (All)
+Aliases:
+
+Required: False
+Position: Named
+Default value: None
+Accept pipeline input: True (ByValue)
+Accept wildcard characters: False
+```
+
+### -Credential
+
+Confluence's credentials for authentication.
+
+> More information on how to authenticate in [about_ConfluencePS_Authentication](../../about/authentication.html)
+
+```yaml
+Type: PSCredential
+Parameter Sets: (All)
+Aliases:
+
+Required: False
+Position: Named
+Default value: None
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### CommonParameters
+
+This cmdlet supports the common parameters: `-Debug`, `-ErrorAction`,
+`-ErrorVariable`, `-InformationAction`, `-InformationVariable`, `-OutVariable`,
+`-OutBuffer`, `-PipelineVariable`, `-Verbose`, `-WarningAction`, and
+`-WarningVariable`.
+For more information, see about_CommonParameters
+(<http://go.microsoft.com/fwlink/?LinkID=113216>).
+
 ## INPUTS
+
+### AtlassianPS.ConfluencePS.Attachment
+
+### AtlassianPS.ConfluencePS.BlogPost
+
+### AtlassianPS.ConfluencePS.Content
+
+### AtlassianPS.ConfluencePS.Page
 
 ## OUTPUTS
 
-### ConfluencePS.ContentLabelSet
+### AtlassianPS.ConfluencePS.Attachment
+
+### AtlassianPS.ConfluencePS.BlogPost
+
+### AtlassianPS.ConfluencePS.Page
 
 ## NOTES
 
 ## RELATED LINKS
 
-[https://github.com/AtlassianPS/ConfluencePS](https://github.com/AtlassianPS/ConfluencePS)
+[Get-ConfluenceAttachment](../Get-ConfluenceAttachment)
+
+[Get-ConfluenceBlogPost](../Get-ConfluenceBlogPost)
+
+[Get-ConfluencePage](../Get-ConfluencePage)
+
+[Add-ConfluenceLabel](../Add-ConfluenceLabel)
+
+[Remove-ConfluenceLabel](../Remove-ConfluenceLabel)
