@@ -1,11 +1,11 @@
 ---
 external help file: ConfluencePS-help.xml
-online version: https://atlassianps.org/docs/ConfluencePS/commands/Invoke-Method/
-Module Name: ConfluencePS
-locale: en-US
-schema: 2.0.0
 layout: documentation
+locale: en-US
+Module Name: ConfluencePS
+online version: https://atlassianps.org/docs/ConfluencePS/commands/Invoke-Method/
 permalink: /docs/ConfluencePS/commands/Invoke-Method/
+schema: 2.0.0
 ---
 
 # Invoke-Method
@@ -16,11 +16,12 @@ Invoke a specific call to a Confluence REST Api endpoint
 
 ## SYNTAX
 
-```powershell
-Invoke-ConfluenceMethod [-URi] <Uri> [[-Method] <WebRequestMethod>] [[-Body] <String>] [-RawBody]
- [[-Headers] <Hashtable>] [[-GetParameters] <Hashtable>] [[-InFile] <String>] [[-OutFile] <String>]
- [[-OutputType] <Type>] [-Credential] <PSCredential> [[-Caller] <Object>] [-IncludeTotalCount] [-Skip <UInt64>]
- [-First <UInt64>] [<CommonParameters>]
+```
+Invoke-ConfluenceMethod [-Uri] <String> [-ServerName <String>] [[-Method] <WebRequestMethod>]
+ [[-Body] <String>] [-RawBody] [[-Headers] <Hashtable>] [-GetParameter <Hashtable>] [-Paging]
+ [[-InFile] <String>] [[-OutFile] <String>] [-StoreSession] [[-OutputType] <Type>]
+ [[-Credential] <PSCredential>] [-Cmdlet <PSCmdlet>] [-IncludeTotalCount] [-Skip <UInt64>] [-First <UInt64>]
+ [<CommonParameters>]
 ```
 
 ## DESCRIPTION
@@ -142,22 +143,6 @@ It also uses the Headers to define what mimeTypes are expected in the response.
 
 ## PARAMETERS
 
-### -URi
-
-URI address of the REST API endpoint.
-
-```yaml
-Type: Uri
-Parameter Sets: (All)
-Aliases:
-
-Required: True
-Position: 1
-Default value: None
-Accept pipeline input: False
-Accept wildcard characters: False
-```
-
 ### -Method
 
 Method of the HTTP request.
@@ -230,26 +215,6 @@ Accept pipeline input: False
 Accept wildcard characters: False
 ```
 
-### -GetParameters
-
-Define a key-value set of GET Parameters.
-
-This is not mandatory, and can be integrated in the Uri.
-This parameter exists to facilitate the addition and removal of parameters
-in particular for paging
-
-```yaml
-Type: Hashtable
-Parameter Sets: (All)
-Aliases:
-
-Required: False
-Position: 5
-Default value: None
-Accept pipeline input: False
-Accept wildcard characters: False
-```
-
 ### -InFile
 
 Path to a file that will be uploaded with a multipart/form-data request.
@@ -316,25 +281,9 @@ Type: PSCredential
 Parameter Sets: (All)
 Aliases:
 
-Required: True
+Required: False
 Position: 9
 Default value: None
-Accept pipeline input: False
-Accept wildcard characters: False
-```
-
-### -Caller
-
-Context which will be used for throwing errors.
-
-```yaml
-Type: Object
-Parameter Sets: (All)
-Aliases:
-
-Required: False
-Position: 10
-Default value: $PSCmdlet
 Accept pipeline input: False
 Accept wildcard characters: False
 ```
@@ -392,10 +341,99 @@ Accept pipeline input: False
 Accept wildcard characters: False
 ```
 
-### CommonParameters
+### -Cmdlet
+{{Fill Cmdlet Description}}
 
-This cmdlet supports the common parameters: -Debug, -ErrorAction, -ErrorVariable, -InformationAction, -InformationVariable, -OutVariable, -OutBuffer, -PipelineVariable, -Verbose, -WarningAction, and -WarningVariable.
-For more information, see about_CommonParameters (<http://go.microsoft.com/fwlink/?LinkID=113216>).
+```yaml
+Type: PSCmdlet
+Parameter Sets: (All)
+Aliases:
+
+Required: False
+Position: Named
+Default value: None
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -GetParameter
+{{Fill GetParameter Description}}
+
+```yaml
+Type: Hashtable
+Parameter Sets: (All)
+Aliases:
+
+Required: False
+Position: Named
+Default value: None
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -Paging
+{{Fill Paging Description}}
+
+```yaml
+Type: SwitchParameter
+Parameter Sets: (All)
+Aliases:
+
+Required: False
+Position: Named
+Default value: None
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -ServerName
+{{Fill ServerName Description}}
+
+```yaml
+Type: String
+Parameter Sets: (All)
+Aliases:
+
+Required: False
+Position: Named
+Default value: None
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -StoreSession
+{{Fill StoreSession Description}}
+
+```yaml
+Type: SwitchParameter
+Parameter Sets: (All)
+Aliases:
+
+Required: False
+Position: Named
+Default value: None
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -Uri
+
+URI address of the REST API endpoint.
+
+```yaml
+Type: String
+Parameter Sets: (All)
+Aliases:
+
+Required: True
+Position: 1
+Default value: None
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### CommonParameters
+This cmdlet supports the common parameters: -Debug, -ErrorAction, -ErrorVariable, -InformationAction, -InformationVariable, -OutVariable, -OutBuffer, -PipelineVariable, -Verbose, -WarningAction, and -WarningVariable. For more information, see about_CommonParameters (http://go.microsoft.com/fwlink/?LinkID=113216).
 
 ## INPUTS
 

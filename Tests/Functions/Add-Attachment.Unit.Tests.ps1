@@ -147,7 +147,7 @@ Describe "Add-Attachment" -Tag Unit {
         }
 
         It "accepts a [AtlassianPS.ConfluencePS.BlogPost] as input for -Content" {
-            Add-ConfluenceAttachment -Path "TestDrive:/file.txt"
+            Add-ConfluenceAttachment -Content $blogpost -Path "TestDrive:/file.txt"
         }
 
         It "accepts a [AtlassianPS.ConfluencePS.Content] as input for -Content" {

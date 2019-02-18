@@ -1,12 +1,13 @@
 ---
 external help file: ConfluencePS-help.xml
-online version: https://atlassianps.org/docs/ConfluencePS/commands/Set-Label/
-Module Name: ConfluencePS
-locale: en-US
-schema: 2.0.0
 layout: documentation
+locale: en-US
+Module Name: ConfluencePS
+online version: https://atlassianps.org/docs/ConfluencePS/commands/Set-Label/
 permalink: /docs/ConfluencePS/commands/Set-Label/
+schema: 2.0.0
 ---
+
 # Set-Label
 
 ## SYNOPSIS
@@ -15,8 +16,9 @@ Set the labels applied to existing Confluence content.
 
 ## SYNTAX
 
-```powershell
-Set-Label -apiURi <Uri> -Credential <PSCredential> [-PageID] <Int32[]> -Label <String[]> [-WhatIf] [-Confirm]
+```
+Set-ConfluenceLabel -ContentID <UInt32[]> -Label <Label[]> [-ServerName <String>] [-Credential <PSCredential>]
+ [-WhatIf] [-Confirm] [<CommonParameters>]
 ```
 
 ## DESCRIPTION
@@ -29,7 +31,7 @@ All preexisting labels will be *removed* in the process.
 
 ## EXAMPLES
 
-### -------------------------- EXAMPLE 1 --------------------------
+### EXAMPLE 1
 
 ```powershell
 Set-ConfluenceLabel -PageID 123456 -Label 'a','b','c'
@@ -37,7 +39,7 @@ Set-ConfluenceLabel -PageID 123456 -Label 'a','b','c'
 
 For existing wiki page with ID 123456, remove all labels, then add the three specified.
 
-### -------------------------- EXAMPLE 2 --------------------------
+### EXAMPLE 2
 
 ```powershell
 Get-ConfluencePage -SpaceKey 'ABC' | Set-Label -Label '123' -WhatIf
@@ -47,23 +49,6 @@ Would remove all labels and apply only the label "123" to all pages in the ABC s
 -WhatIf reports on simulated changes, but does not modifying anything.
 
 ## PARAMETERS
-
-### -apiURi
-
-The URi of the API interface.
-Value can be set persistently with Set-ConfluenceInfo.
-
-```yaml
-Type: Uri
-Parameter Sets: (All)
-Aliases:
-
-Required: True
-Position: Named
-Default value: None
-Accept pipeline input: False
-Accept wildcard characters: False
-```
 
 ### -Credential
 
@@ -75,27 +60,10 @@ Type: PSCredential
 Parameter Sets: (All)
 Aliases:
 
-Required: True
+Required: False
 Position: Named
 Default value: None
 Accept pipeline input: False
-Accept wildcard characters: False
-```
-
-### -PageID
-
-The page ID to remove the label from.
-Accepts multiple IDs via pipeline input.
-
-```yaml
-Type: Int32[]
-Parameter Sets: (All)
-Aliases: ID
-
-Required: True
-Position: 1
-Default value: None
-Accept pipeline input: True (ByPropertyName, ByValue)
 Accept wildcard characters: False
 ```
 
@@ -104,7 +72,7 @@ Accept wildcard characters: False
 Label names to add to the content.
 
 ```yaml
-Type: String[]
+Type: Label[]
 Parameter Sets: (All)
 Aliases:
 
@@ -147,6 +115,39 @@ Default value: None
 Accept pipeline input: False
 Accept wildcard characters: False
 ```
+
+### -ContentID
+{{Fill ContentID Description}}
+
+```yaml
+Type: UInt32[]
+Parameter Sets: (All)
+Aliases: ID, PageID, CommentID, BlogPostID, AttachmentID
+
+Required: True
+Position: Named
+Default value: None
+Accept pipeline input: True (ByPropertyName, ByValue)
+Accept wildcard characters: False
+```
+
+### -ServerName
+{{Fill ServerName Description}}
+
+```yaml
+Type: String
+Parameter Sets: (All)
+Aliases:
+
+Required: False
+Position: Named
+Default value: None
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### CommonParameters
+This cmdlet supports the common parameters: -Debug, -ErrorAction, -ErrorVariable, -InformationAction, -InformationVariable, -OutVariable, -OutBuffer, -PipelineVariable, -Verbose, -WarningAction, and -WarningVariable. For more information, see about_CommonParameters (http://go.microsoft.com/fwlink/?LinkID=113216).
 
 ## INPUTS
 

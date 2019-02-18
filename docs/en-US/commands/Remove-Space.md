@@ -1,12 +1,13 @@
 ---
 external help file: ConfluencePS-help.xml
-online version: https://atlassianps.org/docs/ConfluencePS/commands/Remove-Space/
-Module Name: ConfluencePS
-locale: en-US
-schema: 2.0.0
 layout: documentation
+locale: en-US
+Module Name: ConfluencePS
+online version: https://atlassianps.org/docs/ConfluencePS/commands/Remove-Space/
 permalink: /docs/ConfluencePS/commands/Remove-Space/
+schema: 2.0.0
 ---
+
 # Remove-Space
 
 ## SYNOPSIS
@@ -15,8 +16,9 @@ Remove an existing Confluence space.
 
 ## SYNTAX
 
-```powershell
-Remove-ConfluenceSpace -apiURi <Uri> -Credential <PSCredential> [-SpaceKey] <String[]> [-Force] [-WhatIf] [-Confirm]
+```
+Remove-ConfluenceSpace -apiURi <Uri> -Credential <PSCredential> [-SpaceKey] <String[]> [-Force] [-WhatIf]
+ [-Confirm] [<CommonParameters>]
 ```
 
 ## DESCRIPTION
@@ -27,7 +29,7 @@ Delete an existing Confluence space, including child content.
 
 ## EXAMPLES
 
-### -------------------------- EXAMPLE 1 --------------------------
+### EXAMPLE 1
 
 ```powershell
 Remove-ConfluenceSpace -SpaceKey ABC -WhatIf
@@ -36,7 +38,7 @@ Remove-ConfluenceSpace -SpaceKey ABC -WhatIf
 Simulates the deletion of wiki space ABC and all child content.
 -WhatIf parameter prevents removal of content.
 
-### -------------------------- EXAMPLE 2 --------------------------
+### EXAMPLE 2
 
 ```powershell
 Remove-ConfluenceSpace -SpaceKey XYZ -Force
@@ -148,6 +150,9 @@ Default value: None
 Accept pipeline input: False
 Accept wildcard characters: False
 ```
+
+### CommonParameters
+This cmdlet supports the common parameters: -Debug, -ErrorAction, -ErrorVariable, -InformationAction, -InformationVariable, -OutVariable, -OutBuffer, -PipelineVariable, -Verbose, -WarningAction, and -WarningVariable. For more information, see about_CommonParameters (http://go.microsoft.com/fwlink/?LinkID=113216).
 
 ## INPUTS
 

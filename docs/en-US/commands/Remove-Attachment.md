@@ -1,12 +1,13 @@
 ---
 external help file: ConfluencePS-help.xml
-online version: https://atlassianps.org/docs/ConfluencePS/commands/Remove-Attachment/
-Module Name: ConfluencePS
-locale: en-US
-schema: 2.0.0
 layout: documentation
+locale: en-US
+Module Name: ConfluencePS
+online version: https://atlassianps.org/docs/ConfluencePS/commands/Remove-Attachment/
 permalink: /docs/ConfluencePS/commands/Remove-Attachment/
+schema: 2.0.0
 ---
+
 # Remove-Attachment
 
 ## SYNOPSIS
@@ -15,8 +16,9 @@ Remove an Attachment.
 
 ## SYNTAX
 
-```powershell
-Remove-ConfluenceAttachment -apiURi <Uri> -Credential <PSCredential> [-Attachment] <Attachment[]> [-WhatIf] [-Confirm]
+```
+Remove-ConfluenceAttachment -apiURi <Uri> -Credential <PSCredential> [-Attachment] <Attachment[]> [-WhatIf]
+ [-Confirm] [<CommonParameters>]
 ```
 
 ## DESCRIPTION
@@ -29,7 +31,7 @@ Does accept multiple pages piped via Get-ConfluencePage.
 
 ## EXAMPLES
 
-### -------------------------- EXAMPLE 1 --------------------------
+### EXAMPLE 1
 
 ```powershell
 $attachments = Get-ConfluenceAttachment -PageID 123456
@@ -39,7 +41,7 @@ Remove-ConfluenceAttachment -Attachment $attachments -Verbose -Confirm
 Remove all attachment from page 12345
 Verbose and Confirm flags both active; you will be prompted before deletion.
 
-### -------------------------- EXAMPLE 2 --------------------------
+### EXAMPLE 2
 
 ```powershell
 Get-ConfluenceAttachment -PageID 123456 | Remove-ConfluenceAttachment -WhatIf
@@ -47,7 +49,7 @@ Get-ConfluenceAttachment -PageID 123456 | Remove-ConfluenceAttachment -WhatIf
 
 Do trial deletion for all attachments on page with ID 123456, the WhatIf parameter prevents any modifications.
 
-### -------------------------- EXAMPLE 3 --------------------------
+### EXAMPLE 3
 
 ```powershell
 Get-ConfluenceAttachment -PageID 123456 | Remove-ConfluenceAttachment
@@ -139,6 +141,9 @@ Default value: None
 Accept pipeline input: False
 Accept wildcard characters: False
 ```
+
+### CommonParameters
+This cmdlet supports the common parameters: -Debug, -ErrorAction, -ErrorVariable, -InformationAction, -InformationVariable, -OutVariable, -OutBuffer, -PipelineVariable, -Verbose, -WarningAction, and -WarningVariable. For more information, see about_CommonParameters (http://go.microsoft.com/fwlink/?LinkID=113216).
 
 ## INPUTS
 

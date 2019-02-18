@@ -1,12 +1,13 @@
 ---
 external help file: ConfluencePS-help.xml
-online version: https://atlassianps.org/docs/ConfluencePS/commands/New-Space/
-Module Name: ConfluencePS
-locale: en-US
-schema: 2.0.0
 layout: documentation
+locale: en-US
+Module Name: ConfluencePS
+online version: https://atlassianps.org/docs/ConfluencePS/commands/New-Space/
 permalink: /docs/ConfluencePS/commands/New-Space/
+schema: 2.0.0
 ---
+
 # New-Space
 
 ## SYNOPSIS
@@ -16,16 +17,15 @@ Create a new blank space on your Confluence instance.
 ## SYNTAX
 
 ### byObject (Default)
-
-```powershell
+```
 New-ConfluenceSpace -apiURi <Uri> -Credential <PSCredential> -InputObject <Space> [-WhatIf] [-Confirm]
+ [<CommonParameters>]
 ```
 
 ### byProperties
-
-```powershell
+```
 New-ConfluenceSpace -apiURi <Uri> -Credential <PSCredential> -SpaceKey <String> -Name <String>
- [-Description <String>] [-WhatIf] [-Confirm]
+ [-Description <String>] [-WhatIf] [-Confirm] [<CommonParameters>]
 ```
 
 ## DESCRIPTION
@@ -36,7 +36,7 @@ A value for `Key` and `Name` is mandatory. Not so for `Description`, although re
 
 ## EXAMPLES
 
-### -------------------------- EXAMPLE 1 --------------------------
+### EXAMPLE 1
 
 ```powershell
 New-ConfluenceSpace -Key 'HOTH' -Name 'Planet Hoth' -Description "It's really cold" -Verbose
@@ -44,7 +44,7 @@ New-ConfluenceSpace -Key 'HOTH' -Name 'Planet Hoth' -Description "It's really co
 
 Create a new blank space with an optional description and verbose output.
 
-### -------------------------- EXAMPLE 2 --------------------------
+### EXAMPLE 2
 
 ```powershell
 $spaceObject = [ConfluencePS.Space]@{
@@ -195,6 +195,9 @@ Default value: None
 Accept pipeline input: False
 Accept wildcard characters: False
 ```
+
+### CommonParameters
+This cmdlet supports the common parameters: -Debug, -ErrorAction, -ErrorVariable, -InformationAction, -InformationVariable, -OutVariable, -OutBuffer, -PipelineVariable, -Verbose, -WarningAction, and -WarningVariable. For more information, see about_CommonParameters (http://go.microsoft.com/fwlink/?LinkID=113216).
 
 ## INPUTS
 

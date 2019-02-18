@@ -1,12 +1,13 @@
 ---
 external help file: ConfluencePS-help.xml
-online version: https://atlassianps.org/docs/ConfluencePS/commands/Remove-Page/
-Module Name: ConfluencePS
-locale: en-US
-schema: 2.0.0
 layout: documentation
+locale: en-US
+Module Name: ConfluencePS
+online version: https://atlassianps.org/docs/ConfluencePS/commands/Remove-Page/
 permalink: /docs/ConfluencePS/commands/Remove-Page/
+schema: 2.0.0
 ---
+
 # Remove-Page
 
 ## SYNOPSIS
@@ -15,8 +16,9 @@ Trash an existing Confluence page.
 
 ## SYNTAX
 
-```powershell
+```
 Remove-ConfluencePage -apiURi <Uri> -Credential <PSCredential> [-PageID] <Int32[]> [-WhatIf] [-Confirm]
+ [<CommonParameters>]
 ```
 
 ## DESCRIPTION
@@ -29,7 +31,7 @@ This trashes most content, but will permanently delete "un-trashable" content.
 
 ## EXAMPLES
 
-### -------------------------- EXAMPLE 1 --------------------------
+### EXAMPLE 1
 
 ```powershell
 Remove-ConfluencePage -PageID 123456 -Verbose -Confirm
@@ -38,7 +40,7 @@ Remove-ConfluencePage -PageID 123456 -Verbose -Confirm
 Trash the wiki page with ID 123456.
 Verbose and Confirm flags both active; you will be prompted before removal.
 
-### -------------------------- EXAMPLE 2 --------------------------
+### EXAMPLE 2
 
 ```powershell
 Get-ConfluencePage -SpaceKey ABC -Title '*test*' | Remove-ConfluencePage -WhatIf
@@ -47,7 +49,7 @@ Get-ConfluencePage -SpaceKey ABC -Title '*test*' | Remove-ConfluencePage -WhatIf
 For all wiki pages in space ABC with "test" somewhere in the name,
 simulate the each page being trashed. -WhatIf prevents any removals.
 
-### -------------------------- EXAMPLE 3 --------------------------
+### EXAMPLE 3
 
 ```powershell
 Get-ConfluencePage -Label 'deleteMe' | Remove-ConfluencePage
@@ -140,6 +142,9 @@ Default value: None
 Accept pipeline input: False
 Accept wildcard characters: False
 ```
+
+### CommonParameters
+This cmdlet supports the common parameters: -Debug, -ErrorAction, -ErrorVariable, -InformationAction, -InformationVariable, -OutVariable, -OutBuffer, -PipelineVariable, -Verbose, -WarningAction, and -WarningVariable. For more information, see about_CommonParameters (http://go.microsoft.com/fwlink/?LinkID=113216).
 
 ## INPUTS
 

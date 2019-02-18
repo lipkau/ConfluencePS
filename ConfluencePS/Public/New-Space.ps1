@@ -4,7 +4,7 @@ function New-Space {
         SupportsShouldProcess = $true,
         DefaultParameterSetName = "byObject"
     )]
-    [OutputType([ConfluencePS.Space])]
+    [OutputType([AtlassianPS.ConfluencePS.Space])]
     param (
         [Parameter( Mandatory = $true )]
         [URi]$apiURi,
@@ -58,7 +58,7 @@ function New-Space {
             Uri        = $resourceApi
             Method     = 'Post'
             Body       = ""
-            OutputType = [ConfluencePS.Space]
+            OutputType = [AtlassianPS.ConfluencePS.Space]
             Credential = $Credential
         }
         $Body = @{

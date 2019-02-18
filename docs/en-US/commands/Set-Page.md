@@ -1,12 +1,13 @@
 ---
 external help file: ConfluencePS-help.xml
-online version: https://atlassianps.org/docs/ConfluencePS/commands/Set-Page/
-Module Name: ConfluencePS
-locale: en-US
-schema: 2.0.0
 layout: documentation
+locale: en-US
+Module Name: ConfluencePS
+online version: https://atlassianps.org/docs/ConfluencePS/commands/Set-Page/
 permalink: /docs/ConfluencePS/commands/Set-Page/
+schema: 2.0.0
 ---
+
 # Set-Page
 
 ## SYNOPSIS
@@ -16,15 +17,15 @@ Edit an existing Confluence page.
 ## SYNTAX
 
 ### byParameters (Default)
-
-```powershell
-Set-ConfluencePage -apiURi <Uri> -Credential <PSCredential> -PageID <Int32> [-Title <String>] [-Body <String>] [-Convert] [-ParentID <Int32>] [-Parent <Page>] [-WhatIf] [-Confirm]
+```
+Set-ConfluencePage -PageID <UInt32> [-Title <String>] [-Body <String>] [-Convert] [-ParentID <UInt32>]
+ [-Parent <Page>] [-ServerName <String>] [-Credential <PSCredential>] [-WhatIf] [-Confirm] [<CommonParameters>]
 ```
 
 ### byObject
-
-```powershell
-Set-ConfluencePage -apiURi <Uri> -Credential <PSCredential> -InputObject <Page> [-WhatIf] [-Confirm]
+```
+Set-ConfluencePage -InputObject <Page> [-ServerName <String>] [-Credential <PSCredential>] [-WhatIf] [-Confirm]
+ [<CommonParameters>]
 ```
 
 ## DESCRIPTION
@@ -35,7 +36,7 @@ Content needs to be in "Confluence storage format". Use `-Convert` if not precon
 
 ## EXAMPLES
 
-### -------------------------- EXAMPLE 1 --------------------------
+### EXAMPLE 1
 
 ```powershell
 Set-ConfluencePage -PageID 123456 -Title 'Counting'
@@ -43,7 +44,7 @@ Set-ConfluencePage -PageID 123456 -Title 'Counting'
 
 For existing wiki page 123456, change its name to "Counting".
 
-### -------------------------- EXAMPLE 2 --------------------------
+### EXAMPLE 2
 
 ```powershell
 Set-ConfluencePage -PageID 123456 -Body 'Hello World!' -Convert
@@ -52,7 +53,7 @@ Set-ConfluencePage -PageID 123456 -Body 'Hello World!' -Convert
 For existing wiki page 123456, update its page contents to "Hello World!"
 -Convert applies the "Confluence storage format" to your given string.
 
-### -------------------------- EXAMPLE 3 --------------------------
+### EXAMPLE 3
 
 ```powershell
 Set-ConfluencePage -PageID 123456 -ParentID 654321
@@ -62,7 +63,7 @@ Set-ConfluencePage -PageID 123456 -Parent (Get-ConfluencePage -PageID 654321)
 Two different methods to set a new parent page.
 Parent page 654321 will now have child page 123456.
 
-### -------------------------- EXAMPLE 4 --------------------------
+### EXAMPLE 4
 
 ```powershell
 $page = Get-ConfluencePage -PageID 123456
@@ -77,23 +78,6 @@ object.
 
 ## PARAMETERS
 
-### -apiURi
-
-The URi of the API interface.
-Value can be set persistently with Set-ConfluenceInfo.
-
-```yaml
-Type: Uri
-Parameter Sets: (All)
-Aliases:
-
-Required: True
-Position: Named
-Default value: None
-Accept pipeline input: False
-Accept wildcard characters: False
-```
-
 ### -Credential
 
 Confluence's credentials for authentication.
@@ -104,7 +88,7 @@ Type: PSCredential
 Parameter Sets: (All)
 Aliases:
 
-Required: True
+Required: False
 Position: Named
 Default value: None
 Accept pipeline input: False
@@ -132,7 +116,7 @@ Accept wildcard characters: False
 The ID of the page to edit.
 
 ```yaml
-Type: Int32
+Type: UInt32
 Parameter Sets: byParameters
 Aliases: ID
 
@@ -199,7 +183,7 @@ Optionally define a new parent page.
 If unspecified, no change.
 
 ```yaml
-Type: Int32
+Type: UInt32
 Parameter Sets: byParameters
 Aliases:
 
@@ -259,6 +243,24 @@ Default value: None
 Accept pipeline input: False
 Accept wildcard characters: False
 ```
+
+### -ServerName
+{{Fill ServerName Description}}
+
+```yaml
+Type: String
+Parameter Sets: (All)
+Aliases:
+
+Required: False
+Position: Named
+Default value: None
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### CommonParameters
+This cmdlet supports the common parameters: -Debug, -ErrorAction, -ErrorVariable, -InformationAction, -InformationVariable, -OutVariable, -OutBuffer, -PipelineVariable, -Verbose, -WarningAction, and -WarningVariable. For more information, see about_CommonParameters (http://go.microsoft.com/fwlink/?LinkID=113216).
 
 ## INPUTS
 

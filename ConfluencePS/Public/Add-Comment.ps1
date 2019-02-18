@@ -1,20 +1,20 @@
-function Add-Label {
+function Add-Comment {
     # .ExternalHelp ..\ConfluencePS-help.xml
     [CmdletBinding( ConfirmImpact = 'Low', SupportsShouldProcess )]
-    [OutputType(
-        [AtlassianPS.ConfluencePS.Attachment],
-        [AtlassianPS.ConfluencePS.BlogPost],
-        [AtlassianPS.ConfluencePS.Page]
-    )]
+    [OutputType( [AtlassianPS.ConfluencePS.Comment] )]
     param(
         [Parameter( Mandatory, ValueFromPipeline )]
         [Alias('ID')]
         [AtlassianPS.ConfluencePS.Content[]]
         $Content,
 
-        [Parameter( Mandatory )]
-        [AtlassianPS.ConfluencePS.Label[]]
-        $Label,
+        [Parameter( Mandatory, ValueFromPipeline )]
+        [ValidateNotNullOrEmpty()]
+        [String]
+        $Comment,
+
+        [Switch]
+        $ConvertBody,
 
         [Parameter()]
         [ValidateNotNullOrEmpty()]
@@ -40,7 +40,7 @@ function Add-Label {
     begin {
         Write-Verbose "Function started"
 
-        $resourceApi = "/rest/api/content/{0}/label"
+        $resourceApi = "/rest/api/content"
     }
 
     process {
@@ -51,7 +51,7 @@ function Add-Label {
             if ( -not $_content.Id ) {
                 $writeErrorSplat = @{
                     ExceptionType = "System.ApplicationException"
-                    Message       = "Content is missing the Id"
+                    Message       = "Content is missing the ID"
                     ErrorId       = "AtlassianPS.ConfluencePS.MissingProperty"
                     Category      = "InvalidData"
                     Cmdlet        = $PSCmdlet
@@ -60,21 +60,38 @@ function Add-Label {
                 continue
             }
 
+            $_content = Resolve-ContentType -InputObject $_content -ServerName $ServerName -Credential $Credential
+
+            if ($ConvertBody) {
+                $Comment = ConvertTo-StorageFormat -Content $Comment -ServerName $ServerName -Credential $Credential -ErrorAction Stop
+            }
+
+            $payload = [PSObject]@{
+                type      = "comment"
+                body      = [PSObject]@{
+                    storage = [PSObject]@{
+                        value          = $Comment
+                        representation = 'storage'
+                    }
+                }
+                container = [PSObject]@{
+                    type = $_content.GetType().Name.ToLower()
+                    id   = $_content.Id
+                }
+            }
+
             $iwParameters = @{
-                Uri        = $resourceApi -f $_content.Id
+                Uri        = $resourceApi
                 ServerName = $ServerName
                 Method     = 'Post'
-                # need to create a new hashtable to have the correct case of the keys in the body
-                Body       = ConvertTo-Json ($Label | ForEach-Object {@{prefix = $_.Prefix; name = $_.Name}})
-                OutputType = [AtlassianPS.ConfluencePS.Label]
+                Body       = ConvertTo-Json $payload
+                OutputType = [AtlassianPS.ConfluencePS.Comment]
                 Credential = $Credential
             }
 
             Write-DebugMessage "Invoking API Method with `$iwParameters" -BreakPoint
-            if ($PSCmdlet.ShouldProcess("contentId=[$($_content.Id)]", "Adding Label")) {
-                $_content.Labels = Invoke-Method @iwParameters
-
-                $_content
+            if ($PSCmdlet.ShouldProcess("contentId=[$($_content.Id)]", "Creating new Comment")) {
+                Invoke-Method @iwParameters
             }
         }
     }

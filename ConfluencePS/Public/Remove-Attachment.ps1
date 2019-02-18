@@ -16,7 +16,7 @@ function Remove-Attachment {
             Mandatory = $true,
             ValueFromPipeline = $true
         )]
-        [ConfluencePS.Attachment[]]$Attachment
+        [AtlassianPS.ConfluencePS.Attachment[]]$Attachment
     )
 
     BEGIN {

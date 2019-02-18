@@ -1,6 +1,6 @@
-function New-Page {
+function New-BlogPost {
     [CmdletBinding( ConfirmImpact = 'Low', SupportsShouldProcess )]
-    [OutputType( [AtlassianPS.ConfluencePS.Page] )]
+    [OutputType( [AtlassianPS.ConfluencePS.BlogPost] )]
     param(
         [Parameter( Mandatory, ValueFromPipeline)]
         [Alias('Name')]
@@ -10,8 +10,6 @@ function New-Page {
         [AtlassianPS.ConfluencePS.Space]$Space,
 
         [String]$Body,
-
-        [AtlassianPS.ConfluencePS.Page]$Parent,
 
         [Switch]$ConvertBody,
 
@@ -58,26 +56,12 @@ function New-Page {
             continue
         }
 
-        if ($Parent) {
-            if ( -not (Get-Member -InputObject $Parent -Name Id) -or -not ($Parent.ID)) {
-                $writeErrorSplat = @{
-                    ExceptionType = "System.ApplicationException"
-                    Message       = "Page is missing the Id"
-                    ErrorId       = "AtlassianPS.ConfluencePS.MissingProperty"
-                    Category      = "InvalidData"
-                    Cmdlet        = $PSCmdlet
-                }
-                WriteError @writeErrorSplat
-                continue
-            }
-        }
-
         if ($ConvertBody) {
             $Body = ConvertTo-StorageFormat -Content $Body -ServerName $ServerName -Credential $Credential -ErrorAction Stop
         }
 
         $payload = [PSObject]@{
-            type      = "page"
+            type      = "blogpost"
             space     = [PSObject]@{ key = $Space.Key}
             title     = $Title
             body      = [PSObject]@{
@@ -86,10 +70,6 @@ function New-Page {
                     representation = 'storage'
                 }
             }
-            ancestors = @()
-        }
-        if ($Parent) {
-            $payload.ancestors = @( @{ id = $Parent.ID } )
         }
 
         $iwParameters = @{
@@ -97,12 +77,12 @@ function New-Page {
             ServerName = $ServerName
             Method     = 'Post'
             Body       = ConvertTo-Json $payload
-            OutputType = [AtlassianPS.ConfluencePS.Page]
+            OutputType = [AtlassianPS.ConfluencePS.BlogPost]
             Credential = $Credential
         }
 
         Write-DebugMessage "Invoking API Method with `$iwParameters" -BreakPoint
-        if ($PSCmdlet.ShouldProcess("space=[$($payload.space.key)]", "Creating new Page")) {
+        if ($PSCmdlet.ShouldProcess("spaceKey=[$($payload.space.key)]", "Creating new BlogPost")) {
             Invoke-Method @iwParameters
         }
     }

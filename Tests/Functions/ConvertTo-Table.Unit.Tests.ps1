@@ -192,5 +192,19 @@ Describe 'ConvertTo-Table' -Tag Unit {
             $table | Should -HaveCount 1
             @($row).Count | Should -BeGreaterThan 1
         }
+
+        It "returns a single table when using the pipeline" {
+            $table = Get-FakeService | ConvertTo-ConfluenceTable
+            $row = $table -split [Environment]::NewLine
+
+            $row | Should -HaveCount 12
+            $row[0] | Should -BeExactly '|| Name || DisplayName || Status ||'
+            $row[1..10] | ForEach-Object {
+                $_ | Should -Match '^| [\w\s]+? | [\w\s]+? | [\w\s]+? |$'
+                $_ | Should -Not -Match '\|\|'
+                $_ | Should -Not -Match '\|\s\s+\|'
+            }
+            $row[11] | Should -BeNullOrEmpty
+        }
     }
 }

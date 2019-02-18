@@ -1,41 +1,31 @@
 function Set-Page {
     # .ExternalHelp ..\ConfluencePS-help.xml
-    [CmdletBinding( ConfirmImpact = 'Medium', SupportsShouldProcess, DefaultParameterSetName = 'byParameters' )]
+    [CmdletBinding( ConfirmImpact = 'Medium', SupportsShouldProcess )]
     [OutputType( [AtlassianPS.ConfluencePS.Page] )]
     param(
-        [Parameter( Mandatory, ValueFromPipeline, ParameterSetName = 'byObject' )]
+        [Parameter( Mandatory, ValueFromPipeline )]
         [AtlassianPS.ConfluencePS.Page]
-        $InputObject,
+        $Page,
 
-        [Parameter( Mandatory, ValueFromPipeline, ParameterSetName = 'byParameters' )]
-        [ValidateRange(1, [UInt32]::MaxValue)]
-        [Alias('ID')]
-        [UInt32]
-        $PageID,
-
-        [Parameter(ParameterSetName = 'byParameters')]
+        [Parameter()]
         [ValidateNotNullOrEmpty()]
         [String]
         $Title,
 
-        [Parameter(ParameterSetName = 'byParameters')]
+        [Parameter()]
         [String]
         $Body,
 
-        [Parameter(ParameterSetName = 'byParameters')]
+        [Parameter()]
         [Switch]
-        $Convert,
+        $ConvertBody,
 
-        [Parameter(ParameterSetName = 'byParameters')]
-        [ValidateRange(1, [Uint32]::MaxValue)]
-        [UInt32]
-        $ParentID,
-
-        [Parameter(ParameterSetName = 'byParameters')]
+        [Parameter()]
         [AtlassianPS.ConfluencePS.Page]
         $Parent,
 
         [Parameter()]
+        [ValidateNotNullOrEmpty()]
         [ArgumentCompleter(
             {
                 param($commandName, $parameterName, $wordToComplete, $commandAst, $fakeBoundParameter)
@@ -60,10 +50,18 @@ function Set-Page {
 
         $resourceApi = "/rest/api/content/{0}"
 
-        # If -Convert is flagged, call ConvertTo-ConfluenceStorageFormat against the -Body
-        If ($Convert) {
-            Write-Verbose '-Convert flag active; converting content to Confluence storage format'
-            $Body = ConvertTo-StorageFormat -Content $Body -ServerName $ServerName -Credential $Credential
+        if ($Parent) {
+            if ( -not (Get-Member -InputObject $Parent -Name Id) -or -not ($Parent.ID)) {
+                $writeErrorSplat = @{
+                    ExceptionType = "System.ApplicationException"
+                    Message       = "Page is missing the Id"
+                    ErrorId       = "AtlassianPS.ConfluencePS.MissingProperty"
+                    Category      = "InvalidData"
+                    Cmdlet        = $PSCmdlet
+                }
+                WriteError @writeErrorSplat
+                continue
+            }
         }
     }
 
@@ -71,71 +69,55 @@ function Set-Page {
         Write-DebugMessage "ParameterSetName: $($PsCmdlet.ParameterSetName)"
         Write-DebugMessage "PSBoundParameters: $($PSBoundParameters | Out-String)"
 
+        # Check if $Page has all properties we need
+        if (-not ($Page.Version.Number -and $Page.Title)) {
+            Write-Verbose "Incomplete Page. Fetching a new copy."
+            $Page = Get-Content -Content $Page -ServerName $ServerName -Credential $Credential
+        }
+
+        if ($Title) { $Page.Title = $Title }
+        # $Body might be empty
+        if ($PSBoundParameters.Keys -contains "Body") {
+            if ($ConvertBody) {
+                $Body = ConvertTo-StorageFormat -Content $Body -ServerName $ServerName -Credential $Credential -ErrorAction Stop
+            }
+            $Page.Body = $Body
+        }
+        # Ancestors is undocumented! May break in the future
+        # http://stackoverflow.com/questions/23523705/how-to-create-new-page-in-confluence-using-their-rest-api
+        if ($Parent) {
+            $Page.Ancestors = @( @{ id = $Parent.ID } )
+        }
+
+        $Content = [PSCustomObject]@{
+            type      = "page"
+            title     = $Page.Title
+            body      = [PSCustomObject]@{
+                storage = [PSCustomObject]@{
+                    value          = $Page.Body
+                    representation = 'storage'
+                }
+            }
+            version   = [PSCustomObject]@{
+                number = ++$Page.Version.Number
+            }
+            ancestors = $Page.Ancestors
+        }
+
+        Write-Verbose "body: $Content"
+
         $iwParameters = @{
-            Uri        = ""
+            Uri        = $resourceApi -f $Page.ID
             ServerName = $ServerName
             Method     = 'Put'
-            Body       = ""
+            Body       = ConvertTo-Json $Content
             OutputType = [AtlassianPS.ConfluencePS.Page]
             Credential = $Credential
             Verbose    = $false
         }
 
-        $Content = [PSCustomObject]@{
-            type      = "page"
-            title     = ""
-            body      = [PSCustomObject]@{
-                storage = [PSCustomObject]@{
-                    value          = ""
-                    representation = 'storage'
-                }
-            }
-            version   = [PSCustomObject]@{
-                number = 0
-            }
-            ancestors = @()
-        }
-
-        switch ($PsCmdlet.ParameterSetName) {
-            "byObject" {
-                $iwParameters["Uri"] = $resourceApi -f $InputObject.ID
-                $Content.version.number = ++$InputObject.Version.Number
-                $Content.title = $InputObject.Title
-                $Content.body.storage.value = $InputObject.Body
-                # if ($InputObject.Ancestors) {
-                # $Content["ancestors"] += @( $InputObject.Ancestors | Foreach-Object { @{ id = $_.ID } } )
-                # }
-            }
-            "byParameters" {
-                $iwParameters["Uri"] = $resourceApi -f $PageID
-                $originalPage = Get-Page -PageID $PageID -ApiURi $apiURi -Credential $Credential
-
-                if (($Parent -is [ConfluencePS.Page]) -and ($Parent.ID)) {
-                    $ParentID = $Parent.ID
-                }
-
-                $Content.version.number = ++$originalPage.Version.Number
-                if ($Title) { $Content.title = $Title }
-                else { $Content.title = $originalPage.Title }
-                # $Body might be empty
-                if ($PSBoundParameters.Keys -contains "Body") {
-                    $Content.body.storage.value = $Body
-                }
-                else {
-                    $Content.body.storage.value = $originalPage.Body
-                }
-                # Ancestors is undocumented! May break in the future
-                # http://stackoverflow.com/questions/23523705/how-to-create-new-page-in-confluence-using-their-rest-api
-                if ($ParentID) {
-                    $Content.ancestors = @( @{ id = $ParentID } )
-                }
-            }
-        }
-
-        $iwParameters["Body"] = $Content | ConvertTo-Json
-
         Write-DebugMessage "Invoking API Method with `$iwParameters" -BreakPoint
-        If ($PSCmdlet.ShouldProcess("Page $($Content.title)")) {
+        If ($PSCmdlet.ShouldProcess("title=[$($Page.Title)]", "Updating Page")) {
             Invoke-Method @iwParameters
         }
     }

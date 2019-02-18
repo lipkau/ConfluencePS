@@ -1,12 +1,13 @@
 ---
 external help file: ConfluencePS-help.xml
-online version: https://atlassianps.org/docs/ConfluencePS/commands/Remove-Label/
-Module Name: ConfluencePS
-locale: en-US
-schema: 2.0.0
 layout: documentation
+locale: en-US
+Module Name: ConfluencePS
+online version: https://atlassianps.org/docs/ConfluencePS/commands/Remove-Label/
 permalink: /docs/ConfluencePS/commands/Remove-Label/
+schema: 2.0.0
 ---
+
 # Remove-Label
 
 ## SYNOPSIS
@@ -15,8 +16,9 @@ Remove a label from existing Confluence content.
 
 ## SYNTAX
 
-```powershell
-Remove-ConfluenceLabel -apiURi <Uri> -Credential <PSCredential> [-PageID] <Int32[]> [-Label <String[]>] [-WhatIf] [-Confirm]
+```
+Remove-ConfluenceLabel -apiURi <Uri> -Credential <PSCredential> [-PageID] <Int32[]> [-Label <String[]>]
+ [-WhatIf] [-Confirm] [<CommonParameters>]
 ```
 
 ## DESCRIPTION
@@ -29,7 +31,7 @@ Does accept multiple pages piped via Get-ConfluencePage.
 
 ## EXAMPLES
 
-### -------------------------- EXAMPLE 1 --------------------------
+### EXAMPLE 1
 
 ```powershell
 Remove-ConfluenceLabel -PageID 123456 -Label 'seven' -Verbose -Confirm
@@ -38,7 +40,7 @@ Remove-ConfluenceLabel -PageID 123456 -Label 'seven' -Verbose -Confirm
 Remove label "seven" from the wiki page with ID 123456.
 Verbose and Confirm flags both active; you will be prompted before deletion.
 
-### -------------------------- EXAMPLE 2 --------------------------
+### EXAMPLE 2
 
 ```powershell
 Get-ConfluencePage -SpaceKey 'ABC' -Label 'deleteMe' | Remove-ConfluenceLabel -Label 'deleteMe' -WhatIf
@@ -47,7 +49,7 @@ Get-ConfluencePage -SpaceKey 'ABC' -Label 'deleteMe' | Remove-ConfluenceLabel -L
 For all wiki pages in the ABC space, the label "deleteMe" would be removed.
 WhatIf parameter prevents any modifications.
 
-### -------------------------- EXAMPLE 3 --------------------------
+### EXAMPLE 3
 
 ```powershell
 Get-ConfluenceChildPage -PageID 123456 | Remove-ConfluenceLabel
@@ -157,6 +159,9 @@ Default value: None
 Accept pipeline input: False
 Accept wildcard characters: False
 ```
+
+### CommonParameters
+This cmdlet supports the common parameters: -Debug, -ErrorAction, -ErrorVariable, -InformationAction, -InformationVariable, -OutVariable, -OutBuffer, -PipelineVariable, -Verbose, -WarningAction, and -WarningVariable. For more information, see about_CommonParameters (http://go.microsoft.com/fwlink/?LinkID=113216).
 
 ## INPUTS
 
