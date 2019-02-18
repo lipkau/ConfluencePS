@@ -1,58 +1,78 @@
 function Get-ChildPage {
-    [CmdletBinding( SupportsPaging = $true )]
-    [OutputType([ConfluencePS.Page])]
+    # .ExternalHelp ..\ConfluencePS-help.xml
+    [CmdletBinding( SupportsPaging )]
+    [OutputType( [AtlassianPS.ConfluencePS.Page] )]
     param (
-        [Parameter( Mandatory = $true )]
-        [URi]$apiURi,
-
-        [Parameter( Mandatory = $true )]
-        [PSCredential]$Credential,
-
-        [Parameter(
-            Position = 0,
-            Mandatory = $true,
-            ValueFromPipeline = $true,
-            ValueFromPipelineByPropertyName = $true
-        )]
-        [ValidateRange(1, [int]::MaxValue)]
+        [Parameter( Mandatory, ValueFromPipeline )]
         [Alias('ID')]
-        [int]$PageID,
+        [AtlassianPS.ConfluencePS.Page]
+        $Page,
 
-        [switch]$Recurse,
+        [Switch]
+        $Recurse,
 
+        [Parameter()]
         [ValidateRange(1, [int]::MaxValue)]
-        [int]$PageSize = 25
+        [UInt32]
+        $PageSize = (Get-AtlassianConfiguration -Name "ConfluencePS" -ValueOnly)["PageSize"],
+
+        [Parameter()]
+        [ValidateNotNullOrEmpty()]
+        [ArgumentCompleter(
+            {
+                param($commandName, $parameterName, $wordToComplete, $commandAst, $fakeBoundParameter)
+                $command = Get-Command "Get-*ServerConfiguration" -Module AtlassianPS.Configuration
+                & $command.Name |
+                    Where-Object { $_.Type -eq [AtlassianPS.ServerType]"Confluence" } |
+                    Where-Object { $_.Name -like "$wordToComplete*" } |
+                    ForEach-Object { [System.Management.Automation.CompletionResult]::new( $_.Name, $_.Name, [System.Management.Automation.CompletionResultType]::ParameterValue, $_.Name ) }
+            }
+        )]
+        [String]
+        $ServerName = (Get-DefaultServer),
+
+        [Parameter()]
+        [System.Management.Automation.PSCredential]
+        [System.Management.Automation.Credential()]
+        $Credential = [System.Management.Automation.PSCredential]::Empty
     )
 
-    BEGIN {
-        Write-Verbose "[$($MyInvocation.MyCommand.Name)] Function started"
+    begin {
+        Write-Verbose "Function started"
+
+        $resourceApi = "/rest/api/content/{0}/{1}/page"
 
         $depthLevel = "child"
     }
 
-    PROCESS {
-        Write-Debug "[$($MyInvocation.MyCommand.Name)] ParameterSetName: $($PsCmdlet.ParameterSetName)"
-        Write-Debug "[$($MyInvocation.MyCommand.Name)] PSBoundParameters: $($PSBoundParameters | Out-String)"
+    process {
+        Write-DebugMessage "ParameterSetName: $($PsCmdlet.ParameterSetName)"
+        Write-DebugMessage "PSBoundParameters: $($PSBoundParameters | Out-String)"
 
-        if (($_) -and -not($_ -is [ConfluencePS.Page] -or $_ -is [int])) {
-            $message = "The Object in the pipe is not a Page."
-            $exception = New-Object -TypeName System.ArgumentException -ArgumentList $message
-            Throw $exception
+        if ( -not $Page.ID) {
+            $writeErrorSplat = @{
+                ExceptionType = "System.ApplicationException"
+                Message       = "Page is missing the Id"
+                ErrorId       = "AtlassianPS.ConfluencePS.MissingProperty"
+                Category      = "InvalidData"
+                Cmdlet        = $PSCmdlet
+            }
+            WriteError @writeErrorSplat
+            continue
         }
 
-        if ($PsCmdlet.ParameterSetName -eq "byObject") {
-            $PageID = $InputObject.ID
-        }
         if ($Recurse) { $depthLevel = "descendant" } # depth = ALL
 
         $iwParameters = @{
-            Uri           = "$apiURi/content/{0}/{1}/page" -f $PageID, $depthLevel
+            Uri           = $resourceApi -f $Page.ID, $depthLevel
+            ServerName    = $ServerName
             Method        = 'Get'
-            GetParameters = @{
+            GetParameter = @{
                 expand = "space,version,body.storage,ancestors"
                 limit  = $PageSize
             }
-            OutputType    = [ConfluencePS.Page]
+            Paging        = $true
+            OutputType    = [AtlassianPS.ConfluencePS.Page]
             Credential    = $Credential
         }
 
@@ -64,7 +84,7 @@ function Get-ChildPage {
         Invoke-Method @iwParameters
     }
 
-    END {
-        Write-Verbose "[$($MyInvocation.MyCommand.Name)] Function ended"
+    end {
+        Write-Verbose "Function ended"
     }
 }

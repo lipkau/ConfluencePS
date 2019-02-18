@@ -338,3 +338,5 @@ For more information, see about_CommonParameters
 [Set-ConfluencePage](../Set-ConfluencePage)
 
 [Rename-ConfluencePage](../Rename-ConfluencePage)
+
+[Get-ConfluenceChildPage](../Get-ConfluenceChildPage)
