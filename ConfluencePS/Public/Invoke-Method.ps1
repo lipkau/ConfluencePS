@@ -185,8 +185,20 @@ function Invoke-Method {
             else {
                 if ($webResponse.Content) {
                     try {
-                        # API returned a Content: lets work with it
-                        $response = ConvertFrom-Json ([Text.Encoding]::UTF8.GetString($webResponse.RawContentStream.ToArray()))
+                        switch ($webResponse.Headers["Content-Type"]) {
+                            "application/xml" {
+                                [xml]$response = $webResponse.Content
+                                break
+                            }
+                            "application/json" {
+                                $response = ConvertFrom-Json ([Text.Encoding]::UTF8.GetString($webResponse.RawContentStream.ToArray()))
+                                break
+                            }
+                            default {
+                                $response = $webResponse.Content
+                                return
+                            }
+                        }
 
                         if ($null -ne $response.errors) {
                             Write-Verbose "[$($MyInvocation.MyCommand.Name)] An error response was received from; resolving"
